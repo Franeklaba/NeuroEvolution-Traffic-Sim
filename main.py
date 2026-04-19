@@ -2,9 +2,8 @@ import pygame
 import math
 
 from sys import exit
-pygame.init()
 
-class Raycast_sensor():
+class RaycastSensor():
     STEP_SIZE = 3
     MAX_DISTANCE = 1800
     def __init__(self, angle):
@@ -41,33 +40,33 @@ class Car(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image) 
 
         self.speed = 0.0
-        self.angle = 30.0
+        self.angle = 90.0
         
 
         self.sensors = []
         for angle in self.SENSORS_ANGLE:
-            self.sensors.append(Raycast_sensor(angle))
+            self.sensors.append(RaycastSensor(angle))
 
-    def __update_pos(self):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_w] and self.speed < self.MAX_SPEED:
-            self.speed += self.ACCELERATION
-        elif keys[pygame.K_s] and self.speed > - self.MAX_SPEED:
-            self.speed -= self.ACCELERATION
-        else:
-            if self.speed > 0:
-                self.speed -= self.ACCELERATION / 2
-            elif self.speed < 0:
-                self.speed += self.ACCELERATION / 2
-        if keys[pygame.K_d]:
-            self.angle -= self.ANGLE_CHANGE
-        elif keys[pygame.K_a]:
-            self.angle += self.ANGLE_CHANGE
-        
-        self.pos_y -= self.speed * math.cos(math.radians(self.angle))
-        self.pos_x -= self.speed * math.sin(math.radians(self.angle))
-        self.rect.centery = self.pos_y
-        self.rect.centerx = self.pos_x
+    def __update_pos(self):                                                        #kod do pozniejszego usunięcia
+        keys = pygame.key.get_pressed()                                                                #kod do pozniejszego usunięcia
+        if keys[pygame.K_w] and self.speed < self.MAX_SPEED:                               #kod do pozniejszego usunięcia
+            self.speed += self.ACCELERATION                            #kod do pozniejszego usunięcia
+        elif keys[pygame.K_s] and self.speed > - self.MAX_SPEED:                               #kod do pozniejszego usunięcia
+            self.speed -= self.ACCELERATION                            #kod do pozniejszego usunięcia
+        else:                              #kod do pozniejszego usunięcia
+            if self.speed > 0:                             #kod do pozniejszego usunięcia
+                self.speed -= self.ACCELERATION / 2                            #kod do pozniejszego usunięcia
+            elif self.speed < 0:                               #kod do pozniejszego usunięcia
+                self.speed += self.ACCELERATION / 2                            #kod do pozniejszego usunięcia
+        if keys[pygame.K_d]:                               #kod do pozniejszego usunięcia
+            self.angle -= self.ANGLE_CHANGE                            #kod do pozniejszego usunięcia
+        elif keys[pygame.K_a]:                             #kod do pozniejszego usunięcia
+            self.angle += self.ANGLE_CHANGE                            #kod do pozniejszego usunięcia
+                                    #kod do pozniejszego usunięcia
+        self.pos_y -= self.speed * math.cos(math.radians(self.angle))                              #kod do pozniejszego usunięcia
+        self.pos_x -= self.speed * math.sin(math.radians(self.angle))                              #kod do pozniejszego usunięcia
+        self.rect.centery = self.pos_y                             #kod do pozniejszego usunięcia
+        self.rect.centerx = self.pos_x                             #kod do pozniejszego usunięcia
 
     def __update_sprite(self):
         self.image = pygame.transform.rotate(self.SPRITE, self.angle)
@@ -77,8 +76,8 @@ class Car(pygame.sprite.Sprite):
     def __sensors_managment(self, obsticles_group: pygame.sprite.Group):
         for i in range(self.NUM_OF_SENSORS):
             point_pos = self.sensors[i].Get_colision_point((self.pos_x, self.pos_y), self.angle, obsticles_group)
-            if point_pos:    
-                pygame.draw.line(screen, 'Green',(self.pos_x, self.pos_y) ,point_pos, 1)
+            # if point_pos:    
+            #     pygame.draw.line(screen, 'Green',(self.pos_x, self.pos_y) ,point_pos, 1)
 
     
     def update(self, obsticles_group: pygame.sprite.Group):
@@ -98,49 +97,57 @@ class Obsticle(pygame.sprite.Sprite):
 
 
 
-class Game():
-    WINDOW_WIDTH = 1600
-    WINDOW_HEIFHT = 1000
-    CARS_POSITION = [()]
-    NUM_OF_CARS = 8
+WINDOW_WIDTH = 1600
+WINDOW_HEIGHT = 1000
+NUM_OF_CARS = 15
+BACKGROUND_COLOR = (30, 30, 30) 
+CLOCK_TICK = 30
+LEARNING_MODE = False
 
-    pass
-
-screen = pygame.display.set_mode((1600,1000))
-background_color = (30, 30, 30) 
-pygame.display.set_caption('Runner')
-clock = pygame.time.Clock()
-
-
-
-
-car = pygame.sprite.GroupSingle()
-car.add(Car((200,200)))
-
-obsticles = pygame.sprite.Group()
-obsticles.add(Obsticle(0, 0, 1600, 20))    
-obsticles.add(Obsticle(0, 980, 1600, 20))  
-obsticles.add(Obsticle(0, 0, 20, 1000))    
-obsticles.add(Obsticle(1580, 0, 20, 1000)) 
-
-obsticles.add(Obsticle(400, 300, 200, 50)) 
-obsticles.add(Obsticle(1000, 500, 50, 300))
-obsticles.add(Obsticle(750, 700, 100, 100))
-
-
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
+class CarSimulationMenager():
+    CARS_POSITION = [(WINDOW_WIDTH - 70, WINDOW_HEIGHT - 80 - i * 60) for i in range(NUM_OF_CARS)]
+    OBSTICLES_POS = [(0, 0, 1600, 20), (0, 980, 1600, 20), (0, 0, 20, 1000), (1580, 0, 20, 1000), 
+                (400, 300, 200, 50), (1000, 500, 50, 300), (750, 700, 100, 100)]
     
-    screen.fill(background_color)
-    car.draw(screen)
-    car.update(obsticles)
-    if pygame.sprite.spritecollide(car.sprite, obsticles, False, pygame.sprite.collide_mask):
-        car.sprite.speed = 0  
-        print("Kolizja!")
-    obsticles.draw(screen)
+    def __init__(self):
+        if(LEARNING_MODE):
+            import os
+            os.environ['SDL_VIDEODRIVER'] = 'dummy' 
+            pygame.display.init() 
+            self.screen = pygame.display.set_mode((1600,1000))
+        else:
+            pygame.init()
+            self.screen = pygame.display.set_mode((1600,1000))
+            self.clock = pygame.time.Clock()
 
-    pygame.display.update()
-    clock.tick(30)
+        self.cars_group = pygame.sprite.Group()
+        for car_pos in self.CARS_POSITION:
+            self.cars_group.add(Car(car_pos)) 
+
+        self.obsticles_group = pygame.sprite.Group()
+        for obsticle in self.OBSTICLES_POS:
+            self.obsticles_group.add(Obsticle(*obsticle)) 
+    
+    def run(self):
+        while 1:
+            for event in pygame.event.get():        #kod do pozniejszego usuniecia 
+                if event.type == pygame.QUIT:       #kod do pozniejszego usuniecia 
+                    pygame.quit()       #kod do pozniejszego usuniecia 
+                    exit()                              #kod do pozniejszego usuniecia         
+            if(not LEARNING_MODE):
+                self.__draw()
+                self.clock.tick(CLOCK_TICK)
+
+            self.cars_group.update(self.obsticles_group)
+
+    def __draw(self):
+        self.screen.fill(BACKGROUND_COLOR)
+        self.cars_group.draw(self.screen)
+        self.obsticles_group.draw(self.screen)
+        pygame.display.update()
+
+        
+
+        
+game = CarSimulationMenager()
+game.run()
