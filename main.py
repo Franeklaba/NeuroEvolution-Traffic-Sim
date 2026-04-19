@@ -5,19 +5,24 @@ from sys import exit
 
 class RaycastSensor():
     STEP_SIZE = 3
-    MAX_DISTANCE = 1800
+    RANGE = 1800
     def __init__(self, angle):
         self.angle = angle
+
+    def _get_distance(point_a, point_b):
+        a_x, a_y = point_a
+        b_x, b_y = point_b
+        # return math.sqrt(pow(a_x - b_x, 2) + pow(b_x - b_y, 2))
+    
     def Get_colision_point(self, start_pos, base_angle, obsticles_group: pygame.sprite.Group):
         angle = self.angle + base_angle
         base_x, base_y = start_pos
-        for distance in range(0, self.MAX_DISTANCE, self.STEP_SIZE):
-            curr_x = base_x - distance * math.sin(math.radians(angle))
-            curr_y = base_y - distance * math.cos(math.radians(angle))
+        end_x = base_x - self.RANGE * math.sin(math.radians(angle))
+        end_y = base_y - self.RANGE * math.cos(math.radians(angle))
 
-            for obstacle in obsticles_group:
-                if obstacle.rect.collidepoint(curr_x, curr_y):
-                    return (curr_x, curr_y)
+        # for obstacle in obsticles_group:
+        #         if obstacle.rect.collidepoint(curr_x, curr_y):
+        #             return (curr_x, curr_y)
         return None           
 
 
@@ -26,7 +31,7 @@ class Car(pygame.sprite.Sprite):
     ANGLE_CHANGE = 2
     MAX_SPEED = 8
     ACCELERATION = 0.05
-    SPRITE = pygame.Surface((20, 40), pygame.SRCALPHA)
+    SPRITE = pygame.Surface((40, 20), pygame.SRCALPHA)
     SPRITE.fill('Red')
     SENSORS_ANGLE = [0, 20, 45, 90, 155, 180, 205, 270, 315 ,340]
     NUM_OF_SENSORS = len(SENSORS_ANGLE)
@@ -34,13 +39,15 @@ class Car(pygame.sprite.Sprite):
         super().__init__()
         self.image = self.SPRITE
 
-        self.pos_x, self.pos_y = position
-        self.rect = self.image.get_rect(center = position)
+        self.pos_x, self.pos_y = position #kod do zmiany wprzyszłosci nalezy urzyć Vector2
+        self.pos = pygame.math.Vector2(position)
+        self.direction_vector = pygame.math.Vector2((1,0))
 
+        self.rect = self.image.get_rect(center = position)
         self.mask = pygame.mask.from_surface(self.image) 
 
         self.speed = 0.0
-        self.angle = 90.0
+        self.angle = 0.0
         
 
         self.sensors = []
@@ -63,8 +70,8 @@ class Car(pygame.sprite.Sprite):
         elif keys[pygame.K_a]:                             #kod do pozniejszego usunięcia
             self.angle += self.ANGLE_CHANGE                            #kod do pozniejszego usunięcia
                                     #kod do pozniejszego usunięcia
-        self.pos_y -= self.speed * math.cos(math.radians(self.angle))                              #kod do pozniejszego usunięcia
-        self.pos_x -= self.speed * math.sin(math.radians(self.angle))                              #kod do pozniejszego usunięcia
+        self.pos_y += self.speed * math.sin(math.radians(self.angle))                              #kod do pozniejszego usunięcia
+        self.pos_x -= self.speed * math.cos(math.radians(self.angle))                              #kod do pozniejszego usunięcia
         self.rect.centery = self.pos_y                             #kod do pozniejszego usunięcia
         self.rect.centerx = self.pos_x                             #kod do pozniejszego usunięcia
 
@@ -99,7 +106,7 @@ class Obsticle(pygame.sprite.Sprite):
 
 WINDOW_WIDTH = 1600
 WINDOW_HEIGHT = 1000
-NUM_OF_CARS = 15
+NUM_OF_CARS = 14
 BACKGROUND_COLOR = (30, 30, 30) 
 CLOCK_TICK = 30
 LEARNING_MODE = False
@@ -136,7 +143,7 @@ class CarSimulationMenager():
                     exit()                              #kod do pozniejszego usuniecia         
             if(not LEARNING_MODE):
                 self.__draw()
-                self.clock.tick(CLOCK_TICK)
+                #self.clock.tick(CLOCK_TICK)
 
             self.cars_group.update(self.obsticles_group)
 
