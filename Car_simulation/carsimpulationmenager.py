@@ -14,7 +14,7 @@ class CarSimulationMenager():
             import os
             os.environ['SDL_VIDEODRIVER'] = 'dummy' 
             pygame.display.init() 
-            self.screen = pygame.display.set_mode((self.config.window_width, self.config.window_height))
+            self.screen = None
         else:
             pygame.init()
             self.screen = pygame.display.set_mode((self.config.window_width, self.config.window_height))
@@ -32,12 +32,13 @@ class CarSimulationMenager():
         for _ in range(self.config.simulation_time):
             if not self.is_training_mode:
                 self.__draw()
-                #self.clock.tick(self.config.clock_tick)
+                self.clock.tick(self.config.clock_tick)
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
                         exit()
             self.cars_group.update(self.obsticles_group, self.screen)
+        
 
         pygame.quit()
         exit()

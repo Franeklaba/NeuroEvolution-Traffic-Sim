@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 @dataclass(frozen=True)
 class CarConfig:
     angle_change: int = 2
-    max_speed: int = 8
+    max_speed: int = 6
     acceleration: float = 0.05
     sensors_angle: tuple[int, ...] = (0, 20, 45, 90, 155, 180, 205, 270, 315, 340)
 
@@ -19,16 +19,16 @@ class CarConfig:
 class SimulationConfig:
     window_width: int = 1700
     window_height: int = 1000
-    num_of_cars: int = 15
+    num_of_cars: int = 1
     background_color: tuple[int, int, int] = (30, 30, 30)
-    clock_tick: int = 30
+    clock_tick: int = 20
     simulation_time: int = 1000
     car: CarConfig = field(default_factory=CarConfig)
 
     @property
     def cars_position(self) -> list[tuple[int, int]]:
         return [
-            (0 + 70, self.window_height - 80 - i * 60)
+            (0 + 70, self.window_height - 80 - i * 80)
             for i in range(self.num_of_cars)
         ]
 
