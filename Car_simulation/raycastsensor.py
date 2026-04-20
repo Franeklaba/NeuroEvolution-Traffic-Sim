@@ -1,23 +1,33 @@
 import math
-import pygame 
-class RaycastSensor():
-    STEP_SIZE = 3
-    RANGE = 1800
+
+import pygame
+
+
+class RaycastSensor:
+    RANGE = 2000
     def __init__(self, angle):
         self.angle = angle
 
-    def _get_distance(point_a, point_b):
-        a_x, a_y = point_a
-        b_x, b_y = point_b
-        # return math.sqrt(pow(a_x - b_x, 2) + pow(b_x - b_y, 2))
-    
-    def Get_colision_point(self, start_pos, base_angle, obsticles_group: pygame.sprite.Group):
+    def Get_colision_point(self, start_pos: tuple[float, float], base_angle: float, obsticles_group: pygame.sprite.Group) :
         angle = self.angle + base_angle
-        base_x, base_y = start_pos
-        end_x = base_x - self.RANGE * math.sin(math.radians(angle))
-        end_y = base_y - self.RANGE * math.cos(math.radians(angle))
+        start_x, start_y = start_pos
+        angle_in_rad = math.radians(angle)
+        end_x = start_x + self.RANGE * math.cos(angle_in_rad)
+        end_y = start_y - self.RANGE * math.sin(angle_in_rad)
 
-        # for obstacle in obsticles_group:
-        #         if obstacle.rect.collidepoint(curr_x, curr_y):
-        #             return (curr_x, curr_y)
-        return None           
+        shortest_dist = None
+        closest_point = None
+
+        for obsticle in obsticles_group:
+            clipped = obsticle.rect.clipline(start_x, start_y, end_x, end_y)
+            if not clipped:
+                continue
+            for point_x, point_y in clipped:
+                dist_x = point_x - start_x
+                dist_y = point_y - start_y
+                dist_sq = dist_x * dist_x + dist_y * dist_y
+                if shortest_dist is None or dist_sq < shortest_dist:
+                    shortest_dist = dist_sq
+                    closest_point = (float(point_x), float(point_y))
+
+        return closest_point

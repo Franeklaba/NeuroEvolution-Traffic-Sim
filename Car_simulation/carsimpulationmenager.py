@@ -33,15 +33,20 @@ class CarSimulationMenager():
             if not self.is_training_mode:
                 self.__draw()
                 #self.clock.tick(self.config.clock_tick)
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        exit()
+            self.cars_group.update(self.obsticles_group, self.screen)
 
-            self.cars_group.update(self.obsticles_group)
-        pygame.quit()      
-        exit() 
+        pygame.quit()
+        exit()
 
     def __draw(self):
-        self.screen.fill(self.config.background_color)
         self.cars_group.draw(self.screen)
         self.obsticles_group.draw(self.screen)
         pygame.display.update()
+        self.screen.fill(self.config.background_color)
+
 
        

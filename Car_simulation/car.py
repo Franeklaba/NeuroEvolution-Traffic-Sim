@@ -32,37 +32,41 @@ class Car(pygame.sprite.Sprite):
         cfg = self.car_config
         if keys[pygame.K_w] and self.speed < cfg.max_speed:  # kod do pozniejszego usunięcia
             self.speed += cfg.acceleration  # kod do pozniejszego usunięcia
-        elif keys[pygame.K_s] and self.speed > -cfg.max_speed:  # kod do pozniejszego usunięcia
-            self.speed -= cfg.acceleration  # kod do pozniejszego usunięcia
         else:  # kod do pozniejszego usunięcia
             if self.speed > 0:  # kod do pozniejszego usunięcia
-                self.speed -= cfg.acceleration / 2  # kod do pozniejszego usunięcia
-            elif self.speed < 0:  # kod do pozniejszego usunięcia
-                self.speed += cfg.acceleration / 2  # kod do pozniejszego usunięcia
+                self.speed -= cfg.acceleration  # kod do pozniejszego usunięcia
+            else:
+                self.speed = 0
         if keys[pygame.K_d]:  # kod do pozniejszego usunięcia
             self.angle -= cfg.angle_change  # kod do pozniejszego usunięcia
         elif keys[pygame.K_a]:  # kod do pozniejszego usunięcia
             self.angle += cfg.angle_change  # kod do pozniejszego usunięcia
-        # kod do pozniejszego usunięcia
+
+
+        self.direction_vector.from_polar((1, 0 - self.angle))
+        self.pos += self.direction_vector * self.speed
+        self.rect.center = self.pos
+        
         self.pos_y += self.speed * math.sin(math.radians(self.angle))  # kod do pozniejszego usunięcia
         self.pos_x -= self.speed * math.cos(math.radians(self.angle))  # kod do pozniejszego usunięcia
-        self.rect.centery = self.pos_y  # kod do pozniejszego usunięcia
-        self.rect.centerx = self.pos_x  # kod do pozniejszego usunięcia
+        # self.rect.centery = self.pos_y  # kod do pozniejszego usunięcia
+        # self.rect.centerx = self.pos_x  # kod do pozniejszego usunięcia
 
     def __update_sprite(self):
         self.image = pygame.transform.rotate(self._base_sprite, self.angle)
         self.rect = self.image.get_rect(center=self.rect.center)
         self.mask = pygame.mask.from_surface(self.image)
 
-    def __sensors_managment(self, obsticles_group: pygame.sprite.Group):
+    def __sensors_managment(self, obsticles_group: pygame.sprite.Group, screen):
         for i in range(self.car_config.num_of_sensors):
-            point_pos = self.sensors[i].Get_colision_point(
-                (self.pos_x, self.pos_y), self.angle, obsticles_group
-            )
+            point_pos = self.sensors[i].Get_colision_point(self.pos, self.angle, obsticles_group)
             # if point_pos:
-            #     pygame.draw.line(screen, 'Green',(self.pos_x, self.pos_y) ,point_pos, 1)
+            #     pygame.draw.line(screen, 'Green', self.pos, point_pos, 1)
+                
 
-    def update(self, obsticles_group: pygame.sprite.Group):
+
+
+    def update(self, obsticles_group: pygame.sprite.Group, screen):
         self.__update_pos()
         self.__update_sprite()
-        self.__sensors_managment(obsticles_group)
+        self.__sensors_managment(obsticles_group, screen)

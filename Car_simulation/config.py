@@ -17,18 +17,18 @@ class CarConfig:
 
 @dataclass(frozen=True)
 class SimulationConfig:
-    window_width: int = 1600
+    window_width: int = 1700
     window_height: int = 1000
     num_of_cars: int = 15
     background_color: tuple[int, int, int] = (30, 30, 30)
     clock_tick: int = 30
-    simulation_time: int = 1400
+    simulation_time: int = 1000
     car: CarConfig = field(default_factory=CarConfig)
 
     @property
     def cars_position(self) -> list[tuple[int, int]]:
         return [
-            (self.window_width - 70, self.window_height - 80 - i * 60)
+            (0 + 70, self.window_height - 80 - i * 60)
             for i in range(self.num_of_cars)
         ]
 
