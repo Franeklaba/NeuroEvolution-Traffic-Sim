@@ -6,10 +6,11 @@ from .config import SIMULATION_CONFIG, SimulationConfig
 from sys import exit
 
 class CarSimulationMenager():
-    def __init__(self, config: SimulationConfig = SIMULATION_CONFIG):
+    def __init__(self, is_trainig_mode :bool, config: SimulationConfig = SIMULATION_CONFIG):
         self.config = config
-    
-        if self.config.learning_mode:
+        self.is_training_mode = is_trainig_mode
+
+        if self.is_training_mode:
             import os
             os.environ['SDL_VIDEODRIVER'] = 'dummy' 
             pygame.display.init() 
@@ -28,16 +29,14 @@ class CarSimulationMenager():
             self.obsticles_group.add(Obsticle(*obsticle)) 
     
     def run(self):
-        while 1:
-            for event in pygame.event.get():        #kod do pozniejszego usuniecia 
-                if event.type == pygame.QUIT:       #kod do pozniejszego usuniecia 
-                    pygame.quit()       #kod do pozniejszego usuniecia 
-                    exit()                              #kod do pozniejszego usuniecia         
-            if not self.config.learning_mode:
+        for _ in range(self.config.simulation_time):
+            if not self.is_training_mode:
                 self.__draw()
-                #self.clock.tick(CLOCK_TICK)
+                #self.clock.tick(self.config.clock_tick)
 
             self.cars_group.update(self.obsticles_group)
+        pygame.quit()      
+        exit() 
 
     def __draw(self):
         self.screen.fill(self.config.background_color)

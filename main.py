@@ -1,5 +1,5 @@
 from Car_simulation import CarSimulationMenager
         
 
-game = CarSimulationMenager()
+game = CarSimulationMenager(False)
 game.run()

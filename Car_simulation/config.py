@@ -19,10 +19,10 @@ class CarConfig:
 class SimulationConfig:
     window_width: int = 1600
     window_height: int = 1000
-    num_of_cars: int = 14
+    num_of_cars: int = 15
     background_color: tuple[int, int, int] = (30, 30, 30)
     clock_tick: int = 30
-    learning_mode: bool = False
+    simulation_time: int = 1400
     car: CarConfig = field(default_factory=CarConfig)
 
     @property
