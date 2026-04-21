@@ -11,7 +11,7 @@ class Car(pygame.sprite.Sprite):
         super().__init__()
         self.car_config = car_config
 
-        self._base_sprite = pygame.Surface((40, 20), pygame.SRCALPHA)
+        self._base_sprite = pygame.Surface((25, 20), pygame.SRCALPHA)
         self._base_sprite.fill("Red")
         self.image = self._base_sprite
 
@@ -27,7 +27,7 @@ class Car(pygame.sprite.Sprite):
 
         self.sensors = [RaycastSensor(angle) for angle in self.car_config.sensors_angle]
 
-    def __update_pos(self):  # kod do pozniejszego usunięcia
+    def _update_pos(self):  # kod do pozniejszego usunięcia
         keys = pygame.key.get_pressed()  # kod do pozniejszego usunięcia
         cfg = self.car_config
         if keys[pygame.K_w] and self.speed < cfg.max_speed:  # kod do pozniejszego usunięcia
@@ -52,33 +52,49 @@ class Car(pygame.sprite.Sprite):
         # self.rect.centery = self.pos_y  # kod do pozniejszego usunięcia
         # self.rect.centerx = self.pos_x  # kod do pozniejszego usunięcia
 
-    def __update_sprite(self):
+    def _update_sprite(self):
         self.image = pygame.transform.rotate(self._base_sprite, self.angle)
         self.rect = self.image.get_rect(center=self.rect.center)
         self.mask = pygame.mask.from_surface(self.image)
+    def _draw_sensors(self, distacnce_to_obsticle, obsticle_col_point, car_col_point, screen, is_car):
+        if distacnce_to_obsticle == 0:
+            current_color = 'DarkGray' # Pusty laser, brak jakiejkolwiek przeszkody
+        elif distacnce_to_obsticle < 0.2:
+            current_color = 'Green'    # Przeszkoda bardzo daleko (strefa komfortu)
+        elif distacnce_to_obsticle < 0.5:
+            current_color = 'Yellow'   # Umiarkowane zagrożenie (AI zaczyna zwracać uwagę)
+        elif distacnce_to_obsticle < 0.8:
+            current_color = 'Orange'   # Duże niebezpieczeństwo (AI powinno mocno korygować tor jazdy)
+        else:
+            current_color = 'Red'      # Krytycznie blisko - kolizja jest niemal pewna
+        
+        if distacnce_to_obsticle > 0:
+            pygame.draw.circle(screen, current_color, obsticle_col_point, 3)
 
-    def __sensors_managment(self, obsticles_group: pygame.sprite.Group, screen = None):
+        
+        if is_car:
+            pygame.draw.line(screen, "White", self.pos, car_col_point, 4)
+        pygame.draw.line(screen, "Green", self.pos, obsticle_col_point, 1)
+        
+
+        
+        if distacnce_to_obsticle > 0:
+            pygame.draw.circle(screen, current_color, obsticle_col_point, 3)
+
+    def _sensors_managment(self, obsticles_group: pygame.sprite.Group, cars_group: pygame.sprite.Group, screen = None):
         for i in range(self.car_config.num_of_sensors):
-            dist, point_pos = self.sensors[i].get_distance_and_colision_point(self.pos, self.direction_vector, obsticles_group, self.speed)
-            if screen: #and i in {0,1, self.car_config.num_of_sensors - 1} 
-                if dist == 0:
-                    current_color = 'DarkGray' # Pusty laser, brak jakiejkolwiek przeszkody
-                elif dist < 0.2:
-                    current_color = 'Green'    # Przeszkoda bardzo daleko (strefa komfortu)
-                elif dist < 0.5:
-                    current_color = 'Yellow'   # Umiarkowane zagrożenie (AI zaczyna zwracać uwagę)
-                elif dist < 0.8:
-                    current_color = 'Orange'   # Duże niebezpieczeństwo (AI powinno mocno korygować tor jazdy)
-                else:
-                    current_color = 'Red'      # Krytycznie blisko - kolizja jest niemal pewna
+            distacnce_to_obsticle, distance_to_another_car, sensor_range, car_obj, obsticle_col_point, car_col_point = \
+            self.sensors[i].get_sensor_data(self.pos, self.direction_vector, obsticles_group, cars_group, self.speed, self)
+            
+            
+            if screen: 
+                self._draw_sensors(distacnce_to_obsticle, obsticle_col_point, car_col_point, screen, not(car_obj == None))
                 
-                pygame.draw.line(screen, current_color, self.pos, point_pos, 1)
+        
                 
-                if dist > 0:
-                    pygame.draw.circle(screen, current_color, point_pos, 3)
+        
 
-
-    def update(self, obsticles_group: pygame.sprite.Group, screen):
-        self.__update_pos()
-        self.__update_sprite()
-        self.__sensors_managment(obsticles_group, screen)
+    def update(self, obsticles_group: pygame.sprite.Group, cars_group: pygame.sprite.Group, screen):
+        self._update_pos()
+        self._update_sprite()
+        self._sensors_managment(obsticles_group, cars_group, screen)
