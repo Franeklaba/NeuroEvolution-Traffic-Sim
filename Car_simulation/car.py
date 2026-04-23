@@ -1,7 +1,5 @@
 import math
-
 import pygame
-
 from .config import CAR_CONFIG, CarConfig
 from .raycastsensor import RaycastSensor
 
@@ -14,6 +12,8 @@ class Car(pygame.sprite.Sprite):
         self._base_sprite = pygame.Surface((25, 20), pygame.SRCALPHA)
         self._base_sprite.fill("Red")
         self.image = self._base_sprite
+
+        self.current_observation = list()
 
         self.pos_x, self.pos_y = position  # kod do zmiany wprzyszłosci nalezy urzyć Vector2
         self.pos = pygame.math.Vector2(position)
@@ -74,21 +74,41 @@ class Car(pygame.sprite.Sprite):
         
         if is_car:
             pygame.draw.line(screen, "White", self.pos, car_col_point, 4)
-        pygame.draw.line(screen, "Green", self.pos, obsticle_col_point, 1)
+        pygame.draw.line(screen, current_color, self.pos, obsticle_col_point, 1)
         
 
         
         if distacnce_to_obsticle > 0:
             pygame.draw.circle(screen, current_color, obsticle_col_point, 3)
 
+
+    def _get_ml_input(self, measur): # aktualnie funckcja ta przetwarza jedynie wejście z czujnika ścian zakładamy ze na planszy jest tylko jeden samochod 
+        ml_input = list()
+        for distance_to_obsticle, distance_to_another_car, sensor_range, car_obj in measur:
+            dead_zone = 15 + (abs(self.speed) * 2.0) + (sensor_range * 0.1)
+
+            if dead_zone >= sensor_range:
+                dead_zone = sensor_range - 1.0
+
+            standardized_data = (sensor_range - distance_to_obsticle) / (sensor_range - dead_zone)
+            standardized_data = max(0.0, min(1.0, standardized_data))
+            standardized_data = standardized_data ** 1.5
+            ml_input.append(standardized_data)
+        return standardized_data
+
+
     def _sensors_managment(self, obsticles_group: pygame.sprite.Group, cars_group: pygame.sprite.Group, screen = None):
+        measurement = list()
         for i in range(self.car_config.num_of_sensors):
-            distacnce_to_obsticle, distance_to_another_car, sensor_range, car_obj, obsticle_col_point, car_col_point = \
+            distance_to_obsticle, distance_to_another_car, sensor_range, car_obj, obsticle_col_point, car_col_point = \
             self.sensors[i].get_sensor_data(self.pos, self.direction_vector, obsticles_group, cars_group, self.speed, self)
-            
-            
+
             if screen: 
-                self._draw_sensors(distacnce_to_obsticle, obsticle_col_point, car_col_point, screen, not(car_obj == None))
+                self._draw_sensors(distance_to_obsticle, obsticle_col_point, car_col_point, screen, not(car_obj == None))
+
+            measurement.append((distance_to_obsticle, distance_to_another_car, sensor_range, car_obj))
+        
+        self.current_observation = self._get_ml_input(measurement)
                 
         
                 

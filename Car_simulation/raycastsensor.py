@@ -7,17 +7,6 @@ class RaycastSensor:
     BASE_RANGE = 170
     def __init__(self, angle):
         self.angle = angle
-        # dead_zone = 15 + (abs(speed) * 2.0) + (raycas_range * 0.1)
-
-        # if dead_zone >= raycas_range:
-        #     dead_zone = raycas_range - 1.0
-
-        # standardized_data = (raycas_range - distance) / (raycas_range - dead_zone)
-
-        # standardized_data = max(0.0, min(1.0, standardized_data))
-
-        # standardized_data = standardized_data ** 1.5
-        # return standardized_data , point
     
     def get_sensor_data(self, start_pos, car_direction_vector, obsticles_group, cars_group, speed, my_car):
         abs_angle = abs(self.angle) % 360
