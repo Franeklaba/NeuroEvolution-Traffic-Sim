@@ -2,20 +2,21 @@ import math
 import pygame
 from .config import CAR_CONFIG, CarConfig
 from .raycastsensor import RaycastSensor
+from .destinationpoint import DestinationPoint
 
 
 class Car(pygame.sprite.Sprite):
-    def __init__(self, position: tuple[int, int], car_config: CarConfig = CAR_CONFIG):
+    def __init__(self, position: tuple[int, int], dest_point, car_config: CarConfig = CAR_CONFIG):
         super().__init__()
         self.car_config = car_config
-
+        self.dest_point = dest_point
+        
         self._base_sprite = pygame.Surface((25, 20), pygame.SRCALPHA)
-        self._base_sprite.fill("Red")
+        self._base_sprite.fill(dest_point.color)
         self.image = self._base_sprite
 
         self.current_observation = list()
 
-        self.pos_x, self.pos_y = position  # kod do zmiany wprzyszłosci nalezy urzyć Vector2
         self.pos = pygame.math.Vector2(position)
         self.direction_vector = pygame.math.Vector2((1, 0))
 
@@ -46,11 +47,6 @@ class Car(pygame.sprite.Sprite):
         self.direction_vector.from_polar((1, 0 - self.angle))
         self.pos += self.direction_vector * self.speed
         self.rect.center = self.pos
-        
-        self.pos_y += self.speed * math.sin(math.radians(self.angle))  # kod do pozniejszego usunięcia
-        self.pos_x -= self.speed * math.cos(math.radians(self.angle))  # kod do pozniejszego usunięcia
-        # self.rect.centery = self.pos_y  # kod do pozniejszego usunięcia
-        # self.rect.centerx = self.pos_x  # kod do pozniejszego usunięcia
 
     def _update_sprite(self):
         self.image = pygame.transform.rotate(self._base_sprite, self.angle)

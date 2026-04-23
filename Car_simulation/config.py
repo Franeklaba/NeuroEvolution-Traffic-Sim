@@ -19,7 +19,7 @@ class CarConfig:
 class SimulationConfig:
     window_width: int = 1700
     window_height: int = 1000
-    num_of_cars: int = 1
+    num_of_cars: int = 15
     background_color: tuple[int, int, int] = (30, 30, 30)
     clock_tick: int = 20
     simulation_time: int = 1000
@@ -54,32 +54,32 @@ class SimulationConfig:
             (1450, 750, 170, 100),  # Pozioma przeszkoda (skrajna prawa dół)
         ]
     @property
-    def cars_destination_points(self) -> list[tuple[int, int]]:
+    def cars_destination_points_and_color(self) -> list[tuple[tuple[int, int], tuple[int, int, int]]]:
         return [
             # Górna strefa
-            (950, 100),     # Przed pierwszą przeszkodą
-            (1300, 100),    # Pomiędzy przeszkodami u góry
-            (1600, 100),    # Prawy górny róg
+            ((950, 100), (255, 0, 0)),        # Czerwony
+            ((1300, 100), (0, 255, 0)),       # Zielony
+            ((1600, 100), (0, 150, 255)),     # Jasnoniebieski
             
             # Środkowa strefa (wyżej)
-            (1000, 300),    # Nad środkowym słupkiem
-            (1300, 350),    # Wolna przestrzeń na środku-prawo
-            (1600, 350),    # Z prawej strony za blokiem (1400, 150)
+            ((1000, 300), (255, 255, 0)),     # Żółty
+            ((1300, 350), (0, 255, 255)),     # Cyjan (Jasnobłękitny)
+            ((1600, 350), (255, 0, 255)),     # Magenta (Fuksja)
             
             # Środkowa strefa (niżej)
-            (950, 600),     # Z lewej strony wysokiego słupka
-            (1300, 550),    # Środek prawej połówki
-            (1600, 550),    # Skrajnie po prawej, na środku wysokości
+            ((950, 600), (255, 165, 0)),      # Pomarańczowy
+            ((1300, 550), (255, 105, 180)),   # Różowy (Hot Pink)
+            ((1600, 550), (50, 205, 50)),     # Limonkowy
             
             # Dolna strefa
-            (950, 900),     # Dół, na lewo od niskiej belki
-            (1350, 920),    # Dół, pomiędzy belką a poziomą przeszkodą
-            (1650, 950),    # Prawy dolny róg
+            ((950, 900), (255, 215, 0)),      # Złoty
+            ((1350, 920), (255, 99, 71)),     # Pomidorowy
+            ((1650, 950), (64, 224, 208)),    # Turkusowy
             
             # Dodatkowe zakamarki
-            (1250, 700),    # Nad poziomą przeszkodą w prawym dolnym rogu
-            (1550, 200),    # Z prawej strony najwyższego masywnego bloku
-            (1100, 750),    # Wciśnięty nad prawą dolną belką
+            ((1250, 700), (238, 130, 238)),   # Fioletowy
+            ((1550, 200), (255, 127, 80)),    # Koralowy
+            ((1100, 750), (100, 149, 237)),   # Chabrowy
         ]
 
 
