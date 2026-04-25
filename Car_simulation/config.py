@@ -10,6 +10,7 @@ class CarConfig:
     acceleration: float = 0.05
     sensors_angle: tuple[int, ...] = (0, 20, 45, 90, 270, 315, 340)
 
+    dest_point_rect = (40, 40)
     @property
     def num_of_sensors(self) -> int:
         return len(self.sensors_angle)
@@ -19,7 +20,7 @@ class CarConfig:
 class SimulationConfig:
     window_width: int = 1700
     window_height: int = 1000
-    num_of_cars: int = 15
+    num_of_cars: int = 12
     background_color: tuple[int, int, int] = (30, 30, 30)
     clock_tick: int = 20
     simulation_time: int = 1000

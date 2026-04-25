@@ -1,0 +1,6 @@
+1.zaimplementować kolizje samochodu ze scianą jako funckje zwracającą wartoś w wypadku kolizji samochod powinien zostac usuniety z grupy aktywnych samochodow 
+2. po zaimplementowaniu wszystkiech wymaganjacych testowania funkcjonalnosci klasy Car, oraz CarSimpulationMenager 
+nalezy zmodyfikowac sposob kierowania samochodami tak aby samochod przyspiszal/ skrecal na podstawie outpotu sieci neuronowej (wartosci od 0 do 1)
+3. zadbac o bezpieczenstwo kodu np. nie mozna utworzyc wiecej samochodow niz jest dostaepnych punktow docelowych itp. zweryfikowac spojnosc danych wejsciowych 
+4. dodanie metody fitness w klasie Car obliczającą jak dobrze poradzł sobie poszczególny samochód 
+5

@@ -6,10 +6,10 @@ from .destinationpoint import DestinationPoint
 
 
 class Car(pygame.sprite.Sprite):
-    def __init__(self, position: tuple[int, int], dest_point, car_config: CarConfig = CAR_CONFIG):
+    def __init__(self, position: tuple[int, int], dest_point: DestinationPoint, car_config: CarConfig = CAR_CONFIG):
         super().__init__()
         self.car_config = car_config
-        self.dest_point = dest_point
+        self.dest_point:DestinationPoint = dest_point
         
         self._base_sprite = pygame.Surface((25, 20), pygame.SRCALPHA)
         self._base_sprite.fill(dest_point.color)
@@ -28,7 +28,19 @@ class Car(pygame.sprite.Sprite):
 
         self.sensors = [RaycastSensor(angle) for angle in self.car_config.sensors_angle]
 
-    def _update_pos(self):  # kod do pozniejszego usunięcia
+        self.counter = 0 # KOD TYMCZASOWY DO TESTOWANIA funkcji _get_ml_input
+    @property
+    def dist_to_dest_point(self):
+        return  self.pos.distance_to(self.dest_point.pos)
+    @property 
+    def angle_to_dest_point(self):
+        target_vector = self.dest_point.pos - self.pos
+        if target_vector.length() > 0:
+            return self.direction_vector.angle_to(target_vector)
+        return 0.0
+        
+
+    def _update_pos(self):  
         keys = pygame.key.get_pressed()  # kod do pozniejszego usunięcia
         cfg = self.car_config
         if keys[pygame.K_w] and self.speed < cfg.max_speed:  # kod do pozniejszego usunięcia
@@ -53,16 +65,7 @@ class Car(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.rect.center)
         self.mask = pygame.mask.from_surface(self.image)
     def _draw_sensors(self, distacnce_to_obsticle, obsticle_col_point, car_col_point, screen, is_car):
-        if distacnce_to_obsticle == 0:
-            current_color = 'DarkGray' # Pusty laser, brak jakiejkolwiek przeszkody
-        elif distacnce_to_obsticle < 0.2:
-            current_color = 'Green'    # Przeszkoda bardzo daleko (strefa komfortu)
-        elif distacnce_to_obsticle < 0.5:
-            current_color = 'Yellow'   # Umiarkowane zagrożenie (AI zaczyna zwracać uwagę)
-        elif distacnce_to_obsticle < 0.8:
-            current_color = 'Orange'   # Duże niebezpieczeństwo (AI powinno mocno korygować tor jazdy)
-        else:
-            current_color = 'Red'      # Krytycznie blisko - kolizja jest niemal pewna
+        current_color = 'Green'      # Krytycznie blisko - kolizja jest niemal pewna
         
         if distacnce_to_obsticle > 0:
             pygame.draw.circle(screen, current_color, obsticle_col_point, 3)
@@ -78,8 +81,8 @@ class Car(pygame.sprite.Sprite):
             pygame.draw.circle(screen, current_color, obsticle_col_point, 3)
 
 
-    def _get_ml_input(self, measur): # aktualnie funckcja ta przetwarza jedynie wejście z czujnika ścian zakładamy ze na planszy jest tylko jeden samochod 
-        ml_input = list()
+    def _get_ml_sensor_input(self, measur):
+        ml_sensor_input = list()
         for distance_to_obsticle, distance_to_another_car, sensor_range, car_obj in measur:
             dead_zone = 15 + (abs(self.speed) * 2.0) + (sensor_range * 0.1)
 
@@ -89,8 +92,26 @@ class Car(pygame.sprite.Sprite):
             standardized_data = (sensor_range - distance_to_obsticle) / (sensor_range - dead_zone)
             standardized_data = max(0.0, min(1.0, standardized_data))
             standardized_data = standardized_data ** 1.5
-            ml_input.append(standardized_data)
-        return standardized_data
+            ml_sensor_input.append(standardized_data)
+
+        return ml_sensor_input
+    def _get_ml_nav_input(self):
+        MAX_DIST = 2000.0 
+        norm_distance = min(1.0, self.dist_to_dest_point / MAX_DIST)
+        norm_angle = self.angle_to_dest_point / 180
+        return [norm_distance, norm_angle]
+        
+    def _get_ml_input(self, measur): # aktualnie funckcja ta przetwarza jedynie wejście z czujnika ścian zakładamy ze na planszy jest tylko jeden samochod 
+        sensor_data = self._get_ml_sensor_input(measur)
+        navigation_data = self._get_ml_nav_input()
+
+        ml_input = sensor_data + navigation_data
+
+        # if self.counter % 50 == 0: #kod do debugowania 
+        #     print(f"Dist: {self.dist_to_dest_point} | Norm_dist: {navigation_data[0]:.2f} | Angle: {self.angle_to_dest_point:.1f} | Norm_angle: {navigation_data[1]:.2f}")
+        self.counter += 1
+
+        return ml_input
 
 
     def _sensors_managment(self, obsticles_group: pygame.sprite.Group, cars_group: pygame.sprite.Group, screen = None):
@@ -103,14 +124,24 @@ class Car(pygame.sprite.Sprite):
                 self._draw_sensors(distance_to_obsticle, obsticle_col_point, car_col_point, screen, not(car_obj == None))
 
             measurement.append((distance_to_obsticle, distance_to_another_car, sensor_range, car_obj))
+        return measurement                
         
-        self.current_observation = self._get_ml_input(measurement)
-                
-        
-                
+    #TODO napisać obsluge kolizji  dla klasy CAR 
+    def colision_menagment(self):
+        pass
         
 
     def update(self, obsticles_group: pygame.sprite.Group, cars_group: pygame.sprite.Group, screen):
-        self._update_pos()
+        if screen is not None:
+            self._update_pos()
+
         self._update_sprite()
-        self._sensors_managment(obsticles_group, cars_group, screen)
+        sesor_mesur = self._sensors_managment(obsticles_group, cars_group, screen)
+        self.current_observation = self._get_ml_input(sesor_mesur)
+        self.colision_menagment()
+
+
+
+    #TODO napisać funckje fittingu dla klasy CAR w danym stacie 
+    def fitting(self):
+        pass

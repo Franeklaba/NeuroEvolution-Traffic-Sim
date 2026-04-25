@@ -23,26 +23,43 @@ class CarSimulationMenager():
             self.screen = pygame.display.set_mode((self.config.window_width, self.config.window_height))
             self.clock = pygame.time.Clock()
 
-        self.cars_group = pygame.sprite.Group()
+        self.active_cars_group = pygame.sprite.Group()
         self.dest_points_group = pygame.sprite.Group()
 
         dest_and_col = self.config.cars_destination_points_and_color
-
-        # random.shuffle(dest_and_col) -> !!!! IMPORTANT IF we want to dest points be random for cars or not 
+        random.shuffle(dest_and_col) #-> !!!! IMPORTANT IF we want to dest points be random for cars or not 
         
         
         #TODO zaimplementować wyjątek polegającym na tym ze jest zbyt mało miejsc docelowych by rozdysponować je samochodom 
         
         for car_pos in self.config.cars_position: 
             dest_pos, col = dest_and_col.pop() 
-            new_dest_point = DestinationPoint(dest_pos, col)
+            new_dest_point = DestinationPoint(dest_pos, col, self.config.car.dest_point_rect)
             self.dest_points_group.add(new_dest_point)
-            self.cars_group.add(Car(car_pos, new_dest_point, self.config.car))
+            self.active_cars_group.add(Car(car_pos, new_dest_point, self.config.car))
 
         self.obsticles_group = pygame.sprite.Group()
         for obsticle in self.config.obsticles_pos:
             self.obsticles_group.add(Obsticle(*obsticle)) 
     
+
+
+
+    def reset(self):
+        self.active_cars_group.empty()
+        self.dest_points_group.empty()
+
+        dest_and_col = self.config.cars_destination_points_and_color
+        random.shuffle(dest_and_col) #-> !!!! IMPORTANT IF we want to dest points be random for cars or not 
+        
+        for car_pos in self.config.cars_position: 
+            dest_pos, col = dest_and_col.pop() 
+            new_dest_point = DestinationPoint(dest_pos, col, self.config.car.dest_point_rect)
+            self.dest_points_group.add(new_dest_point)
+            self.active_cars_group.add(Car(car_pos, new_dest_point, self.config.car))
+
+
+
     def run(self):
         for _ in range(self.config.simulation_time):
             if not self.is_training_mode:
@@ -53,18 +70,17 @@ class CarSimulationMenager():
                         exit()
                 self.clock.tick(self.config.clock_tick)
 
-            self.cars_group.update(self.obsticles_group, self.cars_group, self.screen)
-        
-
-        pygame.quit()
-        exit()
-
+            self.active_cars_group.update(self.obsticles_group, self.active_cars_group, self.screen)
     def __draw(self):
-        self.cars_group.draw(self.screen)
+        self.active_cars_group.draw(self.screen)
         self.obsticles_group.draw(self.screen)
         self.dest_points_group.draw(self.screen)
         pygame.display.update()
         self.screen.fill(self.config.background_color)
 
 
+
+
+    def quit(self):
+        pygame.quit()
        
