@@ -20,7 +20,7 @@ class CarConfig:
 class SimulationConfig:
     window_width: int = 1700
     window_height: int = 1000
-    num_of_cars: int = 12
+    num_of_cars: int = 1
     background_color: tuple[int, int, int] = (30, 30, 30)
     clock_tick: int = 20
     simulation_time: int = 1000
@@ -29,8 +29,7 @@ class SimulationConfig:
     @property
     def cars_position(self) -> list[tuple[int, int]]:
         return [
-            (0 + 70, self.window_height - 80 - i * 80)
-            for i in range(self.num_of_cars)
+            (0 + 70, self.window_height / 2 + (i - self.num_of_cars/2) * 50) for i in range(self.num_of_cars) 
         ]
 
     @property

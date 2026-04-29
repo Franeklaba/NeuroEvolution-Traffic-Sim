@@ -28,6 +28,9 @@ class Car(pygame.sprite.Sprite):
 
         self.sensors = [RaycastSensor(angle) for angle in self.car_config.sensors_angle]
 
+
+
+        self._start_dist_to_dest_point = self.dist_to_dest_point
         self.counter = 0 # KOD TYMCZASOWY DO TESTOWANIA funkcji _get_ml_input
     @property
     def dist_to_dest_point(self):
@@ -40,7 +43,7 @@ class Car(pygame.sprite.Sprite):
         return 0.0
         
 
-    def _update_pos(self):  
+    def _update_pos(self):  #funkcja na razie realizuje poruszanie samochodem z pomocą klawiatury jest to rozwiazanie tymczasowe by przetwstowac wszystkie funkcjonalnosci w przyszlosci samohcod bedzie sterowany outputem z sieci
         keys = pygame.key.get_pressed()  # kod do pozniejszego usunięcia
         cfg = self.car_config
         if keys[pygame.K_w] and self.speed < cfg.max_speed:  # kod do pozniejszego usunięcia
@@ -126,22 +129,26 @@ class Car(pygame.sprite.Sprite):
             measurement.append((distance_to_obsticle, distance_to_another_car, sensor_range, car_obj))
         return measurement                
         
-    #TODO napisać obsluge kolizji  dla klasy CAR 
-    def colision_menagment(self):
-        pass
-        
 
     def update(self, obsticles_group: pygame.sprite.Group, cars_group: pygame.sprite.Group, screen):
         if screen is not None:
-            self._update_pos()
-
-        self._update_sprite()
+            self._update_sprite()
+        
+        self._update_pos()
         sesor_mesur = self._sensors_managment(obsticles_group, cars_group, screen)
         self.current_observation = self._get_ml_input(sesor_mesur)
-        self.colision_menagment()
 
 
 
-    #TODO napisać funckje fittingu dla klasy CAR w danym stacie 
-    def fitting(self):
-        pass
+    #TODO funckja wymaga dopracowania przedstawiono dopiero szkielet 
+    def car_score(self, time=0, colision=False, win=False):
+        result = 0
+        if(not colision):
+            result = 200
+        dist_diff = self._start_dist_to_dest_point - self.dist_to_dest_point
+        result = max(1,result + dist_diff)
+
+        if win:
+            result += max(400, 2 * self._start_dist_to_dest_point - time)
+
+        return result

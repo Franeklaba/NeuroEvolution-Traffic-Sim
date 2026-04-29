@@ -26,6 +26,9 @@ class CarSimulationMenager():
         self.active_cars_group = pygame.sprite.Group()
         self.dest_points_group = pygame.sprite.Group()
 
+
+        self.score = 0
+
         dest_and_col = self.config.cars_destination_points_and_color
         random.shuffle(dest_and_col) #-> !!!! IMPORTANT IF we want to dest points be random for cars or not 
         
@@ -49,6 +52,8 @@ class CarSimulationMenager():
         self.active_cars_group.empty()
         self.dest_points_group.empty()
 
+        self.score = 0
+
         dest_and_col = self.config.cars_destination_points_and_color
         random.shuffle(dest_and_col) #-> !!!! IMPORTANT IF we want to dest points be random for cars or not 
         
@@ -58,10 +63,23 @@ class CarSimulationMenager():
             self.dest_points_group.add(new_dest_point)
             self.active_cars_group.add(Car(car_pos, new_dest_point, self.config.car))
 
+    def colosion_menagment(self, frame_counter): #funkcja na razie zakłada ze na mapie znajduje sie jeden samochod wiec kolizja miedzy pojazdami nie wystepuje 
+        
+        #TODO miejsce na zrealizowanie kolizji między samochodkami które powinny być sprawdzo przed kolizjiami samochodow ze scianami 
+        
+        for car in self.active_cars_group:
+            if pygame.sprite.spritecollide(car, self.obsticles_group, False, pygame.sprite.collide_mask):
+                self.score += car.car_score(colision=True)
+                car.kill()
+            elif pygame.sprite.collide_mask(car, car.dest_point):
+                self.score += car.car_score(time=frame_counter,win=True)
+                car.kill()
+        
 
+    
 
     def run(self):
-        for _ in range(self.config.simulation_time):
+        for frame_counter in range(self.config.simulation_time):
             if not self.is_training_mode:
                 self.__draw()
                 for event in pygame.event.get():
@@ -71,10 +89,16 @@ class CarSimulationMenager():
                 self.clock.tick(self.config.clock_tick)
 
             self.active_cars_group.update(self.obsticles_group, self.active_cars_group, self.screen)
+            self.colosion_menagment(frame_counter)
+
+            if not self.active_cars_group:
+                break
+        
+
     def __draw(self):
+        self.dest_points_group.draw(self.screen)
         self.active_cars_group.draw(self.screen)
         self.obsticles_group.draw(self.screen)
-        self.dest_points_group.draw(self.screen)
         pygame.display.update()
         self.screen.fill(self.config.background_color)
 
