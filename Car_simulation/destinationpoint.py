@@ -10,3 +10,4 @@ class DestinationPoint(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = self.pos)    
         self.mask = pygame.mask.from_surface(self.image) 
 
+        

@@ -20,7 +20,7 @@ class CarConfig:
 class SimulationConfig:
     window_width: int = 1700
     window_height: int = 1000
-    num_of_cars: int = 1
+    num_of_cars: int = 10
     background_color: tuple[int, int, int] = (30, 30, 30)
     clock_tick: int = 20
     simulation_time: int = 1000

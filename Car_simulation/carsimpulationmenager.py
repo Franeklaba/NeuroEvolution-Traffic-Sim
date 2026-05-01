@@ -10,7 +10,7 @@ from sys import exit
 
 class CarSimulationMenager():
     def __init__(self, is_trainig_mode :bool, config: SimulationConfig = SIMULATION_CONFIG):
-        self.config = config
+        self.config = config 
         self.is_training_mode = is_trainig_mode
 
         if self.is_training_mode:
@@ -22,7 +22,7 @@ class CarSimulationMenager():
             pygame.init()
             self.screen = pygame.display.set_mode((self.config.window_width, self.config.window_height))
             self.clock = pygame.time.Clock()
-
+        
         self.active_cars_group = pygame.sprite.Group()
         self.dest_points_group = pygame.sprite.Group()
 
