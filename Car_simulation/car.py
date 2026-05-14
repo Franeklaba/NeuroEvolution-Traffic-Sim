@@ -43,7 +43,7 @@ class Car(pygame.sprite.Sprite):
         return 0.0
         
 
-    def _update_pos(self, gas):  #funkcja na razie realizuje poruszanie samochodem z pomocą klawiatury jest to rozwiazanie tymczasowe by przetwstowac wszystkie funkcjonalnosci w przyszlosci samohcod bedzie sterowany outputem z sieci
+    def _update_pos(self, actions):  #funkcja na razie realizuje poruszanie samochodem z pomocą klawiatury jest to rozwiazanie tymczasowe by przetwstowac wszystkie funkcjonalnosci w przyszlosci samohcod bedzie sterowany outputem z sieci
         # keys = pygame.key.get_pressed()  # kod do pozniejszego usunięcia
         # cfg = self.car_config
         # if keys[pygame.K_w] and self.speed < cfg.max_speed:  # kod do pozniejszego usunięcia
@@ -59,12 +59,13 @@ class Car(pygame.sprite.Sprite):
         #     self.angle += cfg.angle_change  # kod do pozniejszego usunięcia
         
         cfg = self.car_config
-        if gas and self.speed < cfg.max_speed:  # kod do pozniejszego usunięcia
+        if actions[0] and self.speed < cfg.max_speed:  # kod do pozniejszego usunięcia
             self.speed += cfg.acceleration  # kod do pozniejszego usunięcia
         else:  
             if self.speed > 0:
-                self.speed -= cfg.acceleration  
-            else:
+                self.speed -= cfg.acceleration * 2
+            
+            if self.speed < 0:
                 self.speed = 0
 
         self.direction_vector.from_polar((1, 0 - self.angle))
@@ -107,7 +108,7 @@ class Car(pygame.sprite.Sprite):
 
         return ml_sensor_input
     def _get_ml_nav_input(self):
-        MAX_DIST = 2000.0 
+        MAX_DIST = 200
         norm_distance = min(1.0, self.dist_to_dest_point / MAX_DIST)
         norm_angle = self.angle_to_dest_point / 180
         return [norm_distance, norm_angle]
@@ -117,7 +118,6 @@ class Car(pygame.sprite.Sprite):
         navigation_data = self._get_ml_nav_input()
 
         ml_input = sensor_data + navigation_data
-
         # if self.counter % 50 == 0: #kod do debugowania 
         #     print(f"Dist: {self.dist_to_dest_point} | Norm_dist: {navigation_data[0]:.2f} | Angle: {self.angle_to_dest_point:.1f} | Norm_angle: {navigation_data[1]:.2f}")
         self.counter += 1
@@ -138,11 +138,11 @@ class Car(pygame.sprite.Sprite):
         return measurement                
         
 
-    def update(self, obsticles_group: pygame.sprite.Group, cars_group: pygame.sprite.Group, screen):
+    def update(self, obsticles_group: pygame.sprite.Group, cars_group: pygame.sprite.Group, screen, actions):
         if screen is not None:
             self._update_sprite()
         
-        self._update_pos(1)
+        self._update_pos(actions)
         sesor_mesur = self._sensors_managment(obsticles_group, cars_group, screen)
         self.current_observation = self._get_ml_input(sesor_mesur)
 
@@ -152,11 +152,11 @@ class Car(pygame.sprite.Sprite):
     def car_score(self, time=0, colision=False, win=False):
         result = 0
         if(not colision):
-            result = 200
+            result = 700
         dist_diff = self._start_dist_to_dest_point - self.dist_to_dest_point
         result = max(1,result + dist_diff)
 
         if win:
-            result += max(400, 2 * self._start_dist_to_dest_point - time)
+            result += max(800, 4 * self._start_dist_to_dest_point - time)
 
         return result

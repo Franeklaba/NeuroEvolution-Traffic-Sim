@@ -1,10 +1,4 @@
-import time
-from Car_simulation import CarSimulationMenager
-train_menager = CarSimulationMenager(is_trainig_mode=False)
+from trainingmanager import TrainingManager
 
-start_time = time.time()
-for _ in range(1):
-    train_menager.run()
-    train_menager.reset()
-end_time = time.time()
-train_menager.quit()
+train_menager = TrainingManager()
+train_menager.run()

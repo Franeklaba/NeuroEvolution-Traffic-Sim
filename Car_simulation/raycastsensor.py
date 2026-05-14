@@ -4,6 +4,7 @@ import pygame
 from .obsticle import Obsticle
 
 class RaycastSensor:
+    
     BASE_RANGE = 170
     def __init__(self, angle):
         self.angle = angle
@@ -14,7 +15,7 @@ class RaycastSensor:
             abs_angle = 360 - abs_angle
         
         range_multiplier = 1.0 - (abs_angle / 90.0) * 0.7
-        raycas_range = (self.BASE_RANGE + speed * 35) * range_multiplier
+        raycas_range = (self.BASE_RANGE + speed * 40) * range_multiplier
         
         raycast_direction_vector = car_direction_vector.rotate(self.angle)
         end_point = start_pos + raycast_direction_vector * raycas_range

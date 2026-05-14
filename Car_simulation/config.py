@@ -9,6 +9,7 @@ class CarConfig:
     max_speed: int = 6
     acceleration: float = 0.05
     sensors_angle: tuple[int, ...] = (0, 20, 45, 90, 270, 315, 340)
+    
 
     dest_point_rect = (40, 40)
     @property
@@ -22,8 +23,7 @@ class SimulationConfig:
     window_height: int = 1000
     num_of_cars: int = 1
     background_color: tuple[int, int, int] = (30, 30, 30)
-    clock_tick: int = 20
-    simulation_time: int = 1000
+    clock_tick: int = 60
     car: CarConfig = field(default_factory=CarConfig)
 
     @property

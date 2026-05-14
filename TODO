@@ -3,4 +3,5 @@
 nalezy zmodyfikowac sposob kierowania samochodami tak aby samochod przyspiszal/ skrecal na podstawie outpotu sieci neuronowej (wartosci od 0 do 1)
 3. zadbac o bezpieczenstwo kodu np. nie mozna utworzyc wiecej samochodow niz jest dostaepnych punktow docelowych itp. zweryfikowac spojnosc danych wejsciowych 
 4. dodanie metody fitness w klasie Car obliczającą jak dobrze poradzł sobie poszczególny samochód 
-5
+5 Naley wykonać zbiorczą klase Manager która połączy logikę symulacji i agenta ai
+6 dodanie wieloprocesowości 1: proces uczący 2:proces podgląd progresu komunikują się za pomocą kolejki Queue 
