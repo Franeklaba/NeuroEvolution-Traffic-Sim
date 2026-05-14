@@ -26,10 +26,19 @@ class RaycastSensor:
         car_point = end_point
         closest_car_object = None
 
+        ray_rect = pygame.Rect(
+            min(start_pos.x, end_point.x),
+            min(start_pos.y, end_point.y),
+            abs(end_point.x - start_pos.x) + 1,
+            abs(end_point.y - start_pos.y) + 1
+        )
+
         for obj in itertools.chain(obsticles_group, cars_group):
             if obj == my_car:
                 continue
-
+            if not ray_rect.colliderect(obj.rect):
+                continue
+            
             clipped = obj.rect.clipline(start_pos, end_point)
             if not clipped:
                 continue

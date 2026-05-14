@@ -9,7 +9,7 @@ from .config import SIMULATION_CONFIG, SimulationConfig
 from sys import exit
 
 class CarSimulationMenager():
-    def __init__(self, is_trainig_mode :bool, config: SimulationConfig = SIMULATION_CONFIG):
+    def __init__(self, is_trainig_mode: bool=False, config: SimulationConfig = SIMULATION_CONFIG):
         self.config = config 
         self.is_training_mode = is_trainig_mode
 
