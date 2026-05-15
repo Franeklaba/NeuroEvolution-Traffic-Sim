@@ -77,7 +77,7 @@ class CarSimulationMenager():
                 if event.type == pygame.QUIT:       #nieprzewidzane zachowanie 
                     pygame.quit()
                     exit()      #nieprzewidzane zachowanie 
-            # self.clock.tick(self.config.clock_tick)
+            self.clock.tick(self.config.clock_tick)
         
         for i, car in enumerate(self.active_cars_group):
             car.update(self.obsticles_group, self.active_cars_group, self.screen, actions_matrix[i])

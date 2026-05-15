@@ -3,6 +3,7 @@ import pygame
 from .simulationconfig import CAR_CONFIG, CarConfig
 from .raycastsensor import RaycastSensor
 from .destinationpoint import DestinationPoint
+import random
 
 
 class Car(pygame.sprite.Sprite):
@@ -24,7 +25,10 @@ class Car(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
         self.speed = 0.0
-        self.angle = 0.0
+        self.angle = random.randint(0, 120) - 60
+        self.direction_vector.from_polar((1, 0 - self.angle))
+
+
 
         self.sensors = [RaycastSensor(angle, car_config.sensor) for angle in self.car_config.sensors_angle]
 
@@ -108,8 +112,8 @@ class Car(pygame.sprite.Sprite):
             distance_to_obsticle, distance_to_another_car, sensor_range, car_obj, obsticle_col_point, car_col_point = \
             self.sensors[i].get_sensor_data(self.pos, self.direction_vector, obsticles_group, cars_group, self.speed, self)
 
-            if screen: 
-                self._draw_sensors(distance_to_obsticle, obsticle_col_point, car_col_point, screen, not(car_obj == None))
+            # if screen: 
+            #     self._draw_sensors(distance_to_obsticle, obsticle_col_point, car_col_point, screen, not(car_obj == None))
 
             measurement.append((distance_to_obsticle, distance_to_another_car, sensor_range, car_obj))
         return measurement                

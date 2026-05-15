@@ -21,10 +21,10 @@ class SensorConfig:
 
 @dataclass(frozen=True)
 class CarScoreConfig:
-    no_collision_reward: int = 700
+    no_collision_reward: int = 300
     min_distance_score: int = 1
     win_base_reward: int = 800
-    win_distance_multiplier: int = 4
+    win_distance_multiplier: int = 4.5
 
 @dataclass(frozen=True)
 class CarConfig:
@@ -46,7 +46,7 @@ class CarConfig:
 class SimulationConfig:
     window_width: int = 1700
     window_height: int = 1000
-    num_of_cars: int = 1
+    num_of_cars: int = 15
     background_color: tuple[int, int, int] = (30, 30, 30)
     clock_tick: int = 40
     car: CarConfig = field(default_factory=CarConfig)
@@ -54,7 +54,7 @@ class SimulationConfig:
     @property
     def cars_position(self) -> list[tuple[int, int]]:
         return [
-            (0 + 70, self.window_height / 2 + (i - self.num_of_cars/2) * 100) for i in range(self.num_of_cars) 
+            (0 + 70, self.window_height / 2 + (i - self.num_of_cars/2) * 60) for i in range(self.num_of_cars) 
         ]
 
     @property

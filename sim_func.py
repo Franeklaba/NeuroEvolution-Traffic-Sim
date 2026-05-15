@@ -12,10 +12,7 @@ def run_single_simulation(simulation_manager: CarSimulationMenager, ai_agent: Ai
             break
     return simulation_manager.get_score()
 
-
-import numpy as np
-
-def mutate_genes(genes, mutation_rate=0.1, mutation_strength=0.1):
+def mutate_genes(genes, mutation_rate=0.15, mutation_strength=0.15):
     mutated_genes = []
     for chromosome in genes:
         new_gene = chromosome.copy()
@@ -50,3 +47,19 @@ def reproduction_and_evolve(agents : list[AiAgent], neurons_results):
     
     for i in range(len(agents)):
         agents[i].set_network_genes(new_population_genes[i])
+
+def load_gens(agents : list[AiAgent]):
+    try:
+        geny = np.load('weights.npy', allow_pickle=True)
+    except FileNotFoundError:
+        return agents
+    for i in range(len(agents)):
+        agents[i].set_network_genes(geny[i])
+    return agents
+    
+    
+def save_gens(agents : list[AiAgent]):
+    geny = []
+    for i in range(len(agents)):
+        geny.append(agents[i].get_network_genes())
+    np.save('weights.npy', np.array(geny, dtype=object))
