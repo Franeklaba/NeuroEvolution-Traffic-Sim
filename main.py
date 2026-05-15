@@ -1,4 +1,4 @@
-from trainingmanager import TrainingManager
+from train import TrainingManager
 
 train_menager = TrainingManager()
 train_menager.run()

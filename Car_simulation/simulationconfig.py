@@ -54,7 +54,7 @@ class SimulationConfig:
     @property
     def cars_position(self) -> list[tuple[int, int]]:
         return [
-            (0 + 70, self.window_height / 2 + (i - self.num_of_cars/2) * 50) for i in range(self.num_of_cars) 
+            (0 + 70, self.window_height / 2 + (i - self.num_of_cars/2) * 100) for i in range(self.num_of_cars) 
         ]
 
     @property

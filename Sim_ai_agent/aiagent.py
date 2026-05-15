@@ -1,48 +1,34 @@
-from .neuron import Neuron
-import random
+import numpy as np
+from .layer import Layer
+
 class AiAgent:
-    def activate_func(self, z):
-        return 1 if z > 0 else 0
+    def __init__(self):
+        self.hidden_layer = Layer(input_size=9, output_size=12)
+        self.output_layer = Layer(input_size=12, output_size=2)
 
-    def __init__(self, population):
-        self.population = population
-        self.neurons = [Neuron() for _ in range(self.population)]
+    def forward(self, inputs):
 
-    def get_neuron_output(self, k, x):
-        z = self.neurons[k].get_z(x[0][0])
-        return [[self.activate_func(z)]]
-    
-    def reproduction_and_evolve(self, neurons_results):
-        num_elites = 3
+        inputs_array = np.array(inputs, ndmin=2)
+
+        hidden_output = self.hidden_layer.forward_relu(inputs_array)
+        raw_output = self.output_layer.forward_linear(hidden_output)
+
+        raw_steering = raw_output[:, 0]
+        raw_acceleration = raw_output[:, 1]
+
+        steering = np.tanh(raw_steering)        
         
-        indexed_results = list(enumerate(neurons_results))
-        indexed_results.sort(key=lambda x: x[1], reverse=True)
-        elite_indices = [idx for idx, score in indexed_results[:num_elites]]
+        sigmoid_accel = 1 / (1 + np.exp(-raw_acceleration))
+        acceleration = np.where(sigmoid_accel > 0.5, 1, 0)
 
-        best_idx = elite_indices[0]
-        print(f"Najlepszy neuron -> Waga: {self.neurons[best_idx].weight:.4f}, Bias: {self.neurons[best_idx].bias:.4f}, Wynik: {indexed_results[0][1]}")
-
-        new_population_genes = []
-        for idx in elite_indices:
-            new_population_genes.append((self.neurons[idx].weight, self.neurons[idx].bias))
-
-        min_score = min(neurons_results)
-        if min_score <= 0:
-            shifted_scores = [score - min_score + 1e-5 for score in neurons_results]
-        else:
-            shifted_scores = neurons_results
-
-        remaining_count = len(self.neurons) - num_elites
-        parent_indices = random.choices(range(len(self.neurons)), weights=shifted_scores, k=remaining_count)
-
-        for idx in parent_indices:
-            new_population_genes.append((self.neurons[idx].weight, self.neurons[idx].bias))
-
-        for i in range(len(self.neurons)):
-            self.neurons[i].set_weigth_bias(*new_population_genes[i])
-        for i in range(num_elites, len(self.neurons)):
-            self.neurons[i].mutate(0.1)
-        
+        return np.column_stack((steering, acceleration))
 
 
-    
+    def get_network_genes(self):
+        h_w, h_b = self.hidden_layer.get_layer_weights()
+        o_w, o_b = self.output_layer.get_layer_weights()
+        return [h_w, h_b, o_w, o_b]
+
+    def set_network_genes(self, genes):
+        self.hidden_layer.set_layer_weights(genes[0], genes[1])
+        self.output_layer.set_layer_weights(genes[2], genes[3])

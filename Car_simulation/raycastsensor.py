@@ -2,7 +2,7 @@ import math
 import itertools
 import pygame
 from .obsticle import Obsticle
-from .config import SENSOR_CONFIG, SensorConfig
+from .simulationconfig import SENSOR_CONFIG, SensorConfig
 class RaycastSensor:
     
     BASE_RANGE = 170

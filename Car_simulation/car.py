@@ -1,6 +1,6 @@
 import math
 import pygame
-from .config import CAR_CONFIG, CarConfig
+from .simulationconfig import CAR_CONFIG, CarConfig
 from .raycastsensor import RaycastSensor
 from .destinationpoint import DestinationPoint
 
@@ -29,6 +29,7 @@ class Car(pygame.sprite.Sprite):
         self.sensors = [RaycastSensor(angle, car_config.sensor) for angle in self.car_config.sensors_angle]
 
         self._start_dist_to_dest_point = self.dist_to_dest_point
+
     @property
     def dist_to_dest_point(self):
         return  self.pos.distance_to(self.dest_point.pos)
@@ -42,7 +43,7 @@ class Car(pygame.sprite.Sprite):
 
     def _update_pos(self, actions): #
         cfg = self.car_config
-        if actions[0] and self.speed < cfg.max_speed:  # kod do pozniejszego usunięcia
+        if actions[1] and self.speed < cfg.max_speed:  # kod do pozniejszego usunięcia
             self.speed += cfg.acceleration  # kod do pozniejszego usunięcia
         else:  
             if self.speed > 0:
@@ -51,6 +52,7 @@ class Car(pygame.sprite.Sprite):
             if self.speed < 0:
                 self.speed = 0
 
+        self.angle += actions[0] * cfg.angle_change
         self.direction_vector.from_polar((1, 0 - self.angle))
         self.pos += self.direction_vector * self.speed
         self.rect.center = self.pos
@@ -117,8 +119,7 @@ class Car(pygame.sprite.Sprite):
         if screen is not None:
             self._update_sprite()
         self._update_pos(actions)
-        sesor_mesur = self._sensors_managment(obsticles_group, cars_group, screen)
-        self.current_observation = self._get_ml_input(sesor_mesur)
+        self.take_observations(obsticles_group, cars_group, screen)
 
     #TODO funckja wymaga dopracowania przedstawiono dopiero szkielet 
     def car_score(self, time=0, colision=False, win=False):
@@ -133,3 +134,8 @@ class Car(pygame.sprite.Sprite):
             result += max(score_cfg.win_base_reward, score_cfg.win_distance_multiplier * self._start_dist_to_dest_point - time)
 
         return result
+    
+    def take_observations(self, obsticles_group: pygame.sprite.Group, cars_group: pygame.sprite.Group, screen = None):
+        sesor_mesur = self._sensors_managment(obsticles_group, cars_group, screen)
+        self.current_observation = self._get_ml_input(sesor_mesur)
+
