@@ -1,7 +1,30 @@
 from __future__ import annotations
-
 from dataclasses import dataclass, field
 
+
+@dataclass(frozen=True)
+class MlInputNormConfig:
+    dead_zone_base: float = 15.0           # Base value of the dead zone
+    dead_zone_speed_weight: float = 2.0    # Speed weight multiplier
+    dead_zone_range_weight: float = 0.1    # Sensor range weight multiplier
+    dead_zone_margin: float = 1.0          # Margin when dead_zone >= sensor_range
+    sensor_data_exponent: float = 1.2      # Exponent to emphasize close objects
+    max_nav_distance: float = 1400.0       # Maximum distance for normalization
+    max_nav_angle: float = 180.0           # Maximum angle for normalization
+
+@dataclass(frozen=True)
+class SensorConfig: 
+    base_range: int = 170
+    angle_range_multiplier: float = 0.7 #range_multiplier = 1.0 - (abs_angle / 90.0) * ange_range_muliplayer
+    speed_range_multiplier: float = 40.0 # raycas_range = (self.BASE_RANGE + speed * speed_range_multiplayer) * range_multiplier
+
+
+@dataclass(frozen=True)
+class CarScoreConfig:
+    no_collision_reward: int = 700
+    min_distance_score: int = 1
+    win_base_reward: int = 800
+    win_distance_multiplier: int = 4
 
 @dataclass(frozen=True)
 class CarConfig:
@@ -9,9 +32,11 @@ class CarConfig:
     max_speed: int = 6
     acceleration: float = 0.05
     sensors_angle: tuple[int, ...] = (0, 20, 45, 90, 270, 315, 340)
-    
+    dest_point_rect: tuple[int, int]= (40, 40)
 
-    dest_point_rect = (40, 40)
+    sensor: SensorConfig = field(default_factory=SensorConfig)
+    ml_input_norm: MlInputNormConfig = field(default_factory=MlInputNormConfig)
+    score: CarScoreConfig = field(default_factory=CarScoreConfig)
     @property
     def num_of_sensors(self) -> int:
         return len(self.sensors_angle)
@@ -23,7 +48,7 @@ class SimulationConfig:
     window_height: int = 1000
     num_of_cars: int = 1
     background_color: tuple[int, int, int] = (30, 30, 30)
-    clock_tick: int = 60
+    clock_tick: int = 40
     car: CarConfig = field(default_factory=CarConfig)
 
     @property
@@ -85,3 +110,5 @@ class SimulationConfig:
 
 SIMULATION_CONFIG = SimulationConfig()
 CAR_CONFIG = CarConfig()
+ML_INPUT_NORM_CONFIG = MlInputNormConfig()
+SENSOR_CONFIG = SensorConfig()

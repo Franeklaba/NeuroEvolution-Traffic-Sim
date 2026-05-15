@@ -2,20 +2,22 @@ import math
 import itertools
 import pygame
 from .obsticle import Obsticle
-
+from .config import SENSOR_CONFIG, SensorConfig
 class RaycastSensor:
     
     BASE_RANGE = 170
-    def __init__(self, angle):
+    def __init__(self, angle, config: SensorConfig = SENSOR_CONFIG):
         self.angle = angle
-    
+        self.config = config
+
     def get_sensor_data(self, start_pos, car_direction_vector, obsticles_group, cars_group, speed, my_car):
         abs_angle = abs(self.angle) % 360
         if abs_angle > 180:
             abs_angle = 360 - abs_angle
+        cfg = self.config
         
-        range_multiplier = 1.0 - (abs_angle / 90.0) * 0.7
-        raycas_range = (self.BASE_RANGE + speed * 40) * range_multiplier
+        range_multiplier = 1.0 - (abs_angle / 90.0) * cfg.angle_range_multiplier
+        raycas_range = (cfg.base_range + speed * cfg.speed_range_multiplier) * range_multiplier
         
         raycast_direction_vector = car_direction_vector.rotate(self.angle)
         end_point = start_pos + raycast_direction_vector * raycas_range

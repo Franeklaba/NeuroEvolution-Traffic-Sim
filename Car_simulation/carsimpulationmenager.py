@@ -30,7 +30,7 @@ class CarSimulationMenager():
         self.score = 0
 
         dest_and_col = self.config.cars_destination_points_and_color
-        # random.shuffle(dest_and_col) #-> !!!! IMPORTANT IF we want to dest points be random for cars or not 
+        random.shuffle(dest_and_col) #-> !!!! IMPORTANT IF we want to dest points be random for cars or not 
         
         
         #TODO zaimplementować wyjątek polegającym na tym ze jest zbyt mało miejsc docelowych by rozdysponować je samochodom 
@@ -55,7 +55,7 @@ class CarSimulationMenager():
         self.score = 0
 
         dest_and_col = self.config.cars_destination_points_and_color
-        # random.shuffle(dest_and_col) #-> !!!! IMPORTANT IF we want to dest points be random for cars or not 
+        random.shuffle(dest_and_col) #-> !!!! IMPORTANT IF we want to dest points be random for cars or not 
         for car_pos in self.config.cars_position: 
             dest_pos, col = dest_and_col.pop() 
             new_dest_point = DestinationPoint(dest_pos, col, self.config.car.dest_point_rect)
@@ -89,7 +89,7 @@ class CarSimulationMenager():
                 if event.type == pygame.QUIT:       #nieprzewidzane zachowanie 
                     pygame.quit()
                     exit()      #nieprzewidzane zachowanie 
-            self.clock.tick(self.config.clock_tick)
+            # self.clock.tick(self.config.clock_tick)
         
         for i, car in enumerate(self.active_cars_group):
             car.update(self.obsticles_group, self.active_cars_group, self.screen, actions_matrix[i])

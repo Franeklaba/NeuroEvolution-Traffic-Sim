@@ -2,9 +2,9 @@ from Car_simulation import CarSimulationMenager
 from Sim_ai_agent import AiAgent
 
 class TrainingManager:
-    simulation_time: int = 400
-    population_size = 4
-    generations = 3
+    simulation_time: int = 300
+    population_size = 10
+    generations = 10
 
     def __init__(self):
         self.simulation_menager = CarSimulationMenager(is_trainig_mode=False)
@@ -18,8 +18,8 @@ class TrainingManager:
                 self.simulation_menager.reset()
                 self.simulation_menager.step(0, [[0]])
                 for frame in range(self.simulation_time):
-                    
-                    actions_matrix = self.ai_agent.get_neuron_output(i, self.simulation_menager.get_ml_input())
+                    observations = self.simulation_menager.get_ml_input()
+                    actions_matrix = self.ai_agent.get_neuron_output(i, observations)
                     self.simulation_menager.step(frame, actions_matrix)
                     if not self.simulation_menager.is_active():
                         break
