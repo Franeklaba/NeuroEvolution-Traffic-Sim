@@ -3,12 +3,12 @@ import pygame
 from .simulationconfig import CAR_CONFIG, CarConfig
 from .raycastsensor import RaycastSensor
 from .destinationpoint import DestinationPoint
-import random
 
 
 class Car(pygame.sprite.Sprite):
-    def __init__(self, position: tuple[int, int], dest_point: DestinationPoint, car_config: CarConfig = CAR_CONFIG):
+    def __init__(self, position_and_angle: tuple[int, int], dest_point: DestinationPoint, car_config: CarConfig = CAR_CONFIG):
         super().__init__()
+        position, angle = position_and_angle
         self.car_config = car_config
         self.dest_point:DestinationPoint = dest_point
         
@@ -25,7 +25,7 @@ class Car(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
         self.speed = 0.0
-        self.angle = random.randint(0, 120) - 60
+        self.angle = angle
         self.direction_vector.from_polar((1, 0 - self.angle))
 
 
@@ -119,7 +119,7 @@ class Car(pygame.sprite.Sprite):
         return measurement                
         
 
-    def update(self, obsticles_group: pygame.sprite.Group, cars_group: pygame.sprite.Group, screen, actions):
+    def update(self, obsticles_group: pygame.sprite.Group, cars_group: pygame.sprite.Group, actions, screen):
         if screen is not None:
             self._update_sprite()
         self._update_pos(actions)
@@ -142,4 +142,3 @@ class Car(pygame.sprite.Sprite):
     def take_observations(self, obsticles_group: pygame.sprite.Group, cars_group: pygame.sprite.Group, screen = None):
         sesor_mesur = self._sensors_managment(obsticles_group, cars_group, screen)
         self.current_observation = self._get_ml_input(sesor_mesur)
-

@@ -1,5 +1,6 @@
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
 import pygame
-import random
 from .car import Car
 from .obsticle import Obsticle
 from .destinationpoint import DestinationPoint
@@ -39,13 +40,12 @@ class CarSimulationMenager():
             self.obsticles_group.add(Obsticle(*obsticle)) 
 
         dest_and_col = self.config.cars_destination_points_and_color(map_type)
-        random.shuffle(dest_and_col) #-> !!!! IMPORTANT IF we want to dest points be random for cars or not 
         
-        for car_pos in self.config.cars_position: 
-            dest_pos, col = dest_and_col.pop() 
+        for i, car_pos_and_angle in enumerate(self.config.cars_position_and_angle(map_type)): 
+            dest_pos, col = dest_and_col[i] 
             new_dest_point = DestinationPoint(dest_pos, col, self.config.car.dest_point_rect)
             self.dest_points_group.add(new_dest_point)
-            self.active_cars_group.add(Car(car_pos, new_dest_point, self.config.car))
+            self.active_cars_group.add(Car(car_pos_and_angle, new_dest_point, self.config.car))
 
         for car in self.active_cars_group:
             car.take_observations(self.obsticles_group, self.active_cars_group)
@@ -82,7 +82,7 @@ class CarSimulationMenager():
             self.clock.tick(self.config.clock_tick)
         
         for i, car in enumerate(self.active_cars_group):
-            car.update(self.obsticles_group, self.active_cars_group, self.screen, actions_matrix[i])
+            car.update(self.obsticles_group, self.active_cars_group, actions_matrix[i], self.screen)
         self.colosion_menagment(frame)
 
     def __draw(self):

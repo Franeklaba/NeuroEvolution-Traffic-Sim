@@ -3,10 +3,10 @@ from .layer import Layer
 
 class AiAgent:
     def __init__(self):
-        self.hidden_layer = Layer(input_size=5, output_size=12)
-        self.output_layer = Layer(input_size=12, output_size=2)
-        # self.hidden_layer = Layer(input_size=9, output_size=12)
+        # self.hidden_layer = Layer(input_size=5, output_size=12)
         # self.output_layer = Layer(input_size=12, output_size=2)
+        self.hidden_layer = Layer(input_size=9, output_size=13)
+        self.output_layer = Layer(input_size=13, output_size=2)
 
     def forward(self, inputs):
 

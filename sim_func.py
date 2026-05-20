@@ -1,7 +1,7 @@
 from Car_simulation import CarSimulationMenager
 from Sim_ai_agent import AiAgent
 import numpy as np
-simulation_time = 1000
+simulation_time = 2000
 
 def run_single_simulation(simulation_manager: CarSimulationMenager, ai_agent: AiAgent, map_type="track"):
     simulation_manager.reset(map_type)
@@ -12,7 +12,20 @@ def run_single_simulation(simulation_manager: CarSimulationMenager, ai_agent: Ai
         if not simulation_manager.is_active():
             break
     return simulation_manager.get_score()
-
+def run_simulation(simulation_manager: CarSimulationMenager, ai_agent: AiAgent):
+    score = 0
+    for map_type in simulation_manager.config.map_types:    
+        score += run_single_simulation(simulation_manager, ai_agent, map_type)
+    return score
+def evaluate_genes(genes):
+    simulation_manager = CarSimulationMenager(is_trainig_mode=True)
+    local_agent = AiAgent()
+    local_agent.set_network_genes(genes)
+    
+    score = run_simulation(simulation_manager, local_agent)
+    
+    simulation_manager.quit() 
+    return score
 def mutate_genes(genes, mutation_rate=0.15, mutation_strength=0.15):
     mutated_genes = []
     for chromosome in genes:
@@ -30,7 +43,7 @@ def reproduction_and_evolve(agents : list[AiAgent], neurons_results):
     sorted_results_idx = np.argsort(scores)[::-1]
     elite_indices = [idx for idx in sorted_results_idx[:num_elites]]
     print(f"Najlepszy agent -> : {scores[sorted_results_idx[0]]} Sredni wynik -> : {scores.mean()}")
-
+    best_genes = agents[elite_indices[0]].get_network_genes()
     new_population_genes = []
     for idx in elite_indices:
         new_population_genes.append(agents[idx].get_network_genes())
@@ -47,6 +60,7 @@ def reproduction_and_evolve(agents : list[AiAgent], neurons_results):
     
     for i in range(len(agents)):
         agents[i].set_network_genes(new_population_genes[i])
+    return best_genes
 
 def load_gens(agents : list[AiAgent]):
     try:
