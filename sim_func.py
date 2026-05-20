@@ -3,7 +3,8 @@ from Sim_ai_agent import AiAgent
 import numpy as np
 simulation_time = 1000
 
-def run_single_simulation(simulation_manager: CarSimulationMenager, ai_agent: AiAgent):
+def run_single_simulation(simulation_manager: CarSimulationMenager, ai_agent: AiAgent, map_type="track"):
+    simulation_manager.reset(map_type)
     for frame in range(simulation_time):
         observations = simulation_manager.get_ml_input()
         actions_matrix = ai_agent.forward(observations)
@@ -28,8 +29,7 @@ def reproduction_and_evolve(agents : list[AiAgent], neurons_results):
     scores = np.array(neurons_results)
     sorted_results_idx = np.argsort(scores)[::-1]
     elite_indices = [idx for idx in sorted_results_idx[:num_elites]]
-
-    print(f"Najlepszy neuron -> : {scores[sorted_results_idx[0]]}")
+    print(f"Najlepszy agent -> : {scores[sorted_results_idx[0]]} Sredni wynik -> : {scores.mean()}")
 
     new_population_genes = []
     for idx in elite_indices:
@@ -59,7 +59,5 @@ def load_gens(agents : list[AiAgent]):
     
     
 def save_gens(agents : list[AiAgent]):
-    geny = []
-    for i in range(len(agents)):
-        geny.append(agents[i].get_network_genes())
+    geny = [agent.get_network_genes() for agent in agents]
     np.save('weights.npy', np.array(geny, dtype=object))

@@ -24,19 +24,21 @@ class CarSimulationMenager():
             self.clock = pygame.time.Clock()
         
         self.obsticles_group = pygame.sprite.Group()
-        for obsticle in self.config.obsticles_pos:
-            self.obsticles_group.add(Obsticle(*obsticle)) 
         self.active_cars_group = pygame.sprite.Group()
         self.dest_points_group = pygame.sprite.Group()
         self.score = 0
         self.reset()
         
-    def reset(self):
+    def reset(self, map_type="slalom"):
         self.active_cars_group.empty()
         self.dest_points_group.empty()
+        self.obsticles_group.empty()
         self.score = 0
 
-        dest_and_col = self.config.cars_destination_points_and_color
+        for obsticle in self.config.obsticles_pos(map_type):
+            self.obsticles_group.add(Obsticle(*obsticle)) 
+
+        dest_and_col = self.config.cars_destination_points_and_color(map_type)
         random.shuffle(dest_and_col) #-> !!!! IMPORTANT IF we want to dest points be random for cars or not 
         
         for car_pos in self.config.cars_position: 
