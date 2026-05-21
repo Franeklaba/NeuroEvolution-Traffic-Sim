@@ -1,11 +1,11 @@
 from Car_simulation import CarSimulationMenager
 from Sim_ai_agent import AiAgent
 import numpy as np
-simulation_time = 2000
+from neuroevolutionconfig import NEURO_EVOLUTION_CONFIG, NeuroevolutionConfig 
 
 def run_single_simulation(simulation_manager: CarSimulationMenager, ai_agent: AiAgent, map_type="track"):
     simulation_manager.reset(map_type)
-    for frame in range(simulation_time):
+    for frame in range(NEURO_EVOLUTION_CONFIG.simulation_time):
         observations = simulation_manager.get_ml_input()
         actions_matrix = ai_agent.forward(observations)
         simulation_manager.step(frame, actions_matrix)
@@ -13,10 +13,9 @@ def run_single_simulation(simulation_manager: CarSimulationMenager, ai_agent: Ai
             break
     return simulation_manager.get_score()
 def run_simulation(simulation_manager: CarSimulationMenager, ai_agent: AiAgent):
-    scores = []
-    for map_type in simulation_manager.config.map_types:    
-        scores.append(run_single_simulation(simulation_manager, ai_agent, map_type))
-    return min(scores) 
+    scores = np.array([run_single_simulation(simulation_manager, ai_agent, m) for m in simulation_manager.config.map_types])
+    # return min(scores) 
+    return np.mean(scores) - (NEURO_EVOLUTION_CONFIG.stability_penalty_weight * np.std(scores))
 def evaluate_genes(genes):
     simulation_manager = CarSimulationMenager(is_trainig_mode=True)
     local_agent = AiAgent()
@@ -26,7 +25,7 @@ def evaluate_genes(genes):
     
     simulation_manager.quit() 
     return score
-def mutate_genes(genes, mutation_rate=0.15, mutation_strength=0.15):
+def mutate_genes(genes, mutation_rate=NEURO_EVOLUTION_CONFIG.base_mutation_rate / 2, mutation_strength=NEURO_EVOLUTION_CONFIG.base_mutation_strength / 2):
     mutated_genes = []
     for chromosome in genes:
         new_gene = chromosome.copy()
@@ -53,9 +52,15 @@ def reproduction_and_evolve(agents : list[AiAgent], neurons_results):
     remaining_count = len(agents) - num_elites
     parent_indices = np.random.choice(len(agents), size=remaining_count, p=probabilities)
 
+
+    best_individuals_avg_score = np.mean(scores[sorted_results_idx[:NEURO_EVOLUTION_CONFIG.population_size // 10]])
+    progress = max(0.0, min(1.0, best_individuals_avg_score / NEURO_EVOLUTION_CONFIG.target_score))
+    mutation_rate = NEURO_EVOLUTION_CONFIG.base_mutation_rate * (1.1 - progress)
+    mutation_strength = NEURO_EVOLUTION_CONFIG.base_mutation_strength * (1.1 - progress)
+
     for idx in parent_indices:
         genes = agents[idx].get_network_genes()
-        mutated_genes = mutate_genes(genes)
+        mutated_genes = mutate_genes(genes, mutation_rate, mutation_strength)
         new_population_genes.append(mutated_genes)
     
     for i in range(len(agents)):

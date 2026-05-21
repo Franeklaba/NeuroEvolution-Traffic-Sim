@@ -5,9 +5,10 @@ import multiprocessing
 from multiprocessing import Process, Queue
 import queue
 
-simulation_time = 3000
-population_size = 100
-generations = 40
+from neuroevolutionconfig import NEURO_EVOLUTION_CONFIG, NeuroevolutionConfig 
+
+population_size = NEURO_EVOLUTION_CONFIG.population_size
+generations = NEURO_EVOLUTION_CONFIG.generations
 
 def render_best_agent(gene_queue):
     simulation_manager = CarSimulationMenager(is_trainig_mode=False) 

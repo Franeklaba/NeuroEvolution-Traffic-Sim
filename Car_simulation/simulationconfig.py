@@ -9,7 +9,7 @@ class MlInputNormConfig:
     
 @dataclass(frozen=True)
 class SensorConfig: 
-    base_range: int = 200  # Warto nieznacznie zwiększyć bazowy zasięg, skoro nie ma już bonusu od prędkości
+    base_range: int = 250  # Warto nieznacznie zwiększyć bazowy zasięg, skoro nie ma już bonusu od prędkości
     angle_range_multiplier: float = 0.7
 
 @dataclass(frozen=True)
@@ -24,10 +24,9 @@ class CarScoreConfig:
 @dataclass(frozen=True)
 class CarConfig:
     angle_change: int = 2
-    max_speed: int = 3
-    acceleration: float = 0.05
+    max_speed: int = 10
+    acceleration: float = 0.2
     sensors_angle: tuple[int, ...] = (0, 20, 45, 90, 270, 315, 340)
-    # sensors_angle: tuple[int, ...] = (0, 33, -33)
 
     dest_point_rect: tuple[int, int]= (40, 40)
 
@@ -45,7 +44,7 @@ class SimulationConfig:
     window_height: int = 1000
     num_of_cars: int = 15
     background_color: tuple[int, int, int] = (30, 30, 30)
-    clock_tick: int = 120
+    clock_tick: int = 30
     car: CarConfig = field(default_factory=CarConfig)
     
     _city_positions_and_angles: list[tuple[tuple[int, int], int]] = field(default_factory=lambda: [
@@ -88,7 +87,6 @@ class SimulationConfig:
         return ["slalom", "city", "bottleneck", "track"]
     
     def obsticles_pos(self, map_type="slalom") -> list[tuple[int, int, int, int]]:
-        # Stałe ramki ekranu - wspólne dla każdej mapy
         borders = [
             (0, 0, self.window_width, 10),
             (0, self.window_height - 10, self.window_width, 10),

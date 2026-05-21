@@ -3,8 +3,6 @@ from .layer import Layer
 
 class AiAgent:
     def __init__(self):
-        # self.hidden_layer = Layer(input_size=5, output_size=12)
-        # self.output_layer = Layer(input_size=12, output_size=2)
         self.hidden_layer = Layer(input_size=11, output_size=15)
         self.output_layer = Layer(input_size=15, output_size=2)
 
@@ -19,9 +17,7 @@ class AiAgent:
         raw_acceleration = raw_output[:, 1]
 
         steering = np.tanh(raw_steering)        
-        
-        sigmoid_accel = 1 / (1 + np.exp(-raw_acceleration))
-        acceleration = np.where(sigmoid_accel > 0.5, 1, 0)
+        acceleration = np.tanh(raw_acceleration) 
 
         return np.column_stack((steering, acceleration))
 

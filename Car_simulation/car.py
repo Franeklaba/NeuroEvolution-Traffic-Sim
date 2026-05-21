@@ -49,14 +49,9 @@ class Car(pygame.sprite.Sprite):
 
     def _update_pos(self, actions): #
         cfg = self.car_config
-        if actions[1] and self.speed < cfg.max_speed:  # kod do pozniejszego usunięcia
-            self.speed += cfg.acceleration  # kod do pozniejszego usunięcia
-        else:  
-            if self.speed > 0:
-                self.speed -= cfg.acceleration * 2
-            
-            if self.speed < 0:
-                self.speed = 0
+        self.speed += cfg.acceleration * actions[1]
+        self.speed = min(self.speed, cfg.max_speed)
+        self.speed = max(self.speed, 0)
 
         self.angle += actions[0] * cfg.angle_change
         self.direction_vector.from_polar((1, 0 - self.angle))
