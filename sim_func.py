@@ -13,10 +13,10 @@ def run_single_simulation(simulation_manager: CarSimulationMenager, ai_agent: Ai
             break
     return simulation_manager.get_score()
 def run_simulation(simulation_manager: CarSimulationMenager, ai_agent: AiAgent):
-    score = 0
+    scores = []
     for map_type in simulation_manager.config.map_types:    
-        score += run_single_simulation(simulation_manager, ai_agent, map_type)
-    return score
+        scores.append(run_single_simulation(simulation_manager, ai_agent, map_type))
+    return min(scores) 
 def evaluate_genes(genes):
     simulation_manager = CarSimulationMenager(is_trainig_mode=True)
     local_agent = AiAgent()

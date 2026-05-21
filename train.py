@@ -3,25 +3,30 @@ from Sim_ai_agent import AiAgent
 from sim_func import *
 import multiprocessing
 from multiprocessing import Process, Queue
+import queue
 
 simulation_time = 3000
 population_size = 100
-generations = 100
+generations = 40
 
 def render_best_agent(gene_queue):
     simulation_manager = CarSimulationMenager(is_trainig_mode=False) 
     local_agent = AiAgent()
     
     while True:
-        genes = gene_queue.get() 
-        if genes == "STOP":
+        latest_genes = gene_queue.get() 
+        try:
+            while True:
+                next_genes = gene_queue.get_nowait() 
+                latest_genes = next_genes
+        except queue.Empty:
+            pass
+        if latest_genes == "STOP":
             break
-            
-        local_agent.set_network_genes(genes)
+        local_agent.set_network_genes(latest_genes)
         run_simulation(simulation_manager, local_agent)
         
     simulation_manager.quit()
-
 if __name__ == '__main__':
     ai_agents = [AiAgent() for _ in range(population_size)]
     ai_agents = load_gens(ai_agents)

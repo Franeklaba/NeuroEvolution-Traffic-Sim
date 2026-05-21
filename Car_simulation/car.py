@@ -33,6 +33,8 @@ class Car(pygame.sprite.Sprite):
         self.sensors = [RaycastSensor(angle, car_config.sensor) for angle in self.car_config.sensors_angle]
 
         self._start_dist_to_dest_point = self.dist_to_dest_point
+        self._min_dist_to_dest_point = self.dist_to_dest_point
+
 
     @property
     def dist_to_dest_point(self):
@@ -78,31 +80,30 @@ class Car(pygame.sprite.Sprite):
 
 
     def _get_ml_sensor_input(self, measur):
-        norm_cfg = self.car_config.ml_input_norm
         ml_sensor_input = list()
+        
         for distance_to_obsticle, distance_to_another_car, sensor_range, car_obj in measur:
-            dead_zone = norm_cfg.dead_zone_base + (abs(self.speed) * norm_cfg.dead_zone_speed_weight) + (sensor_range * norm_cfg.dead_zone_range_weight)
-
-            if dead_zone >= sensor_range:
-                dead_zone = sensor_range - norm_cfg.dead_zone_margin
-
-            standardized_data = (sensor_range - distance_to_obsticle) / (sensor_range - dead_zone)
+            standardized_data = 1.0 - (distance_to_obsticle / sensor_range)
             standardized_data = max(0.0, min(1.0, standardized_data))
-            standardized_data = standardized_data ** norm_cfg.sensor_data_exponent
             ml_sensor_input.append(standardized_data)
-
         return ml_sensor_input
+    
     def _get_ml_nav_input(self):
         norm_cfg = self.car_config.ml_input_norm
         norm_distance = min(1.0, self.dist_to_dest_point / norm_cfg.max_nav_distance)
-        norm_angle = self.angle_to_dest_point / norm_cfg.max_nav_angle
-        return [norm_distance, norm_angle]
+        norm_distance = norm_distance ** norm_cfg.nav_distance_exponent
+
+        angle_rad = math.radians(self.angle_to_dest_point)
         
+        sin_angle = math.sin(angle_rad)
+        cos_angle = math.cos(angle_rad)
+        return [norm_distance, sin_angle, cos_angle]
     def _get_ml_input(self, measur): # aktualnie funckcja ta przetwarza jedynie wejście z czujnika ścian zakładamy ze na planszy jest tylko jeden samochod 
         sensor_data = self._get_ml_sensor_input(measur)
         navigation_data = self._get_ml_nav_input()
-
-        ml_input = sensor_data + navigation_data        
+        norm_speed = max(0.0, min(1.0, self.speed / self.car_config.max_speed))
+        
+        ml_input = sensor_data + navigation_data + [norm_speed]       
         return ml_input
 
 
@@ -110,8 +111,7 @@ class Car(pygame.sprite.Sprite):
         measurement = list()
         for i in range(self.car_config.num_of_sensors):
             distance_to_obsticle, distance_to_another_car, sensor_range, car_obj, obsticle_col_point, car_col_point = \
-            self.sensors[i].get_sensor_data(self.pos, self.direction_vector, obsticles_group, cars_group, self.speed, self)
-
+            self.sensors[i].get_sensor_data(self.pos, self.direction_vector, obsticles_group, cars_group, self)
             if screen: 
                 self._draw_sensors(distance_to_obsticle, obsticle_col_point, car_col_point, screen, not(car_obj == None))
 
@@ -124,19 +124,21 @@ class Car(pygame.sprite.Sprite):
             self._update_sprite()
         self._update_pos(actions)
         self.take_observations(obsticles_group, cars_group, screen)
+        self._min_dist_to_dest_point = min(self._min_dist_to_dest_point, self.dist_to_dest_point)
 
-    #TODO funckja wymaga dopracowania przedstawiono dopiero szkielet 
     def car_score(self, time=0, colision=False, win=False):
         score_cfg = self.car_config.score
-        result = 0
-        if(not colision):
-            result = score_cfg.no_collision_reward
-        dist_diff = self._start_dist_to_dest_point - self.dist_to_dest_point
-        result = max(score_cfg.min_distance_score, result + dist_diff)
+        best_dist_achieved = self._start_dist_to_dest_point - self._min_dist_to_dest_point 
+        result = max(score_cfg.min_distance_score, best_dist_achieved)
+        if not colision:
+            result += score_cfg.no_collision_reward
+        else:
+            result = max(score_cfg.min_distance_score, result - score_cfg.collision_penalty)
 
         if win:
-            result += max(score_cfg.win_base_reward, score_cfg.win_distance_multiplier * self._start_dist_to_dest_point - (time**1.1))
-
+            time_penalty = time * score_cfg.time_penalty_multiplier
+            win_bonus = max(score_cfg.win_base_reward, (score_cfg.win_distance_multiplier * self._start_dist_to_dest_point) - time_penalty)
+            result += win_bonus
         return result
     
     def take_observations(self, obsticles_group: pygame.sprite.Group, cars_group: pygame.sprite.Group, screen = None):

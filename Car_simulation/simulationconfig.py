@@ -4,32 +4,27 @@ from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
 class MlInputNormConfig:
-    dead_zone_base: float = 15.0           # Base value of the dead zone
-    dead_zone_speed_weight: float = 2.0    # Speed weight multiplier
-    dead_zone_range_weight: float = 0.1    # Sensor range weight multiplier
-    dead_zone_margin: float = 1.0          # Margin when dead_zone >= sensor_range
-    sensor_data_exponent: float = 1.2      # Exponent to emphasize close objects
-    max_nav_distance: float = 1400.0       # Maximum distance for normalization
-    max_nav_angle: float = 180.0           # Maximum angle for normalization
-
+    max_nav_distance: float = 2000.0       # Maximum distance for normalization
+    nav_distance_exponent: float = 0.5     # Exponent to emphasize close targets
+    
 @dataclass(frozen=True)
 class SensorConfig: 
-    base_range: int = 170
-    angle_range_multiplier: float = 0.7 #range_multiplier = 1.0 - (abs_angle / 90.0) * ange_range_muliplayer
-    speed_range_multiplier: float = 40.0 # raycas_range = (self.BASE_RANGE + speed * speed_range_multiplayer) * range_multiplier
-
+    base_range: int = 200  # Warto nieznacznie zwiększyć bazowy zasięg, skoro nie ma już bonusu od prędkości
+    angle_range_multiplier: float = 0.7
 
 @dataclass(frozen=True)
 class CarScoreConfig:
-    no_collision_reward: int = 300
-    min_distance_score: int = 1
-    win_base_reward: int = 2000
-    win_distance_multiplier: int = 5
+    no_collision_reward: float = 300.0
+    min_distance_score: float = 1.0
+    win_base_reward: float = 2000.0
+    win_distance_multiplier: float = 5.0
+    time_penalty_multiplier: float = 0.5
+    collision_penalty: float = 100.0 
 
 @dataclass(frozen=True)
 class CarConfig:
     angle_change: int = 2
-    max_speed: int = 6
+    max_speed: int = 3
     acceleration: float = 0.05
     sensors_angle: tuple[int, ...] = (0, 20, 45, 90, 270, 315, 340)
     # sensors_angle: tuple[int, ...] = (0, 33, -33)
@@ -50,7 +45,7 @@ class SimulationConfig:
     window_height: int = 1000
     num_of_cars: int = 15
     background_color: tuple[int, int, int] = (30, 30, 30)
-    clock_tick: int = 60
+    clock_tick: int = 120
     car: CarConfig = field(default_factory=CarConfig)
     
     _city_positions_and_angles: list[tuple[tuple[int, int], int]] = field(default_factory=lambda: [
