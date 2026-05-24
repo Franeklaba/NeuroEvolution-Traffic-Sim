@@ -1,6 +1,9 @@
 from Car_simulation import CarSimulationMenager
 from Sim_ai_agent import AiAgent
 import numpy as np
+import queue
+import csv
+
 from neuroevolutionconfig import NEURO_EVOLUTION_CONFIG, NeuroevolutionConfig 
 
 def run_single_simulation(simulation_manager: CarSimulationMenager, ai_agent: AiAgent, map_type="track"):
@@ -17,8 +20,8 @@ def run_simulation(simulation_manager: CarSimulationMenager, ai_agent: AiAgent):
     # return min(scores) 
     return np.mean(scores) - (NEURO_EVOLUTION_CONFIG.stability_penalty_weight * np.std(scores))
 def evaluate_genes(genes):
-    simulation_manager = CarSimulationMenager(is_trainig_mode=True)
-    local_agent = AiAgent()
+    simulation_manager = CarSimulationMenager(1, is_trainig_mode=True)
+    local_agent = AiAgent(1)
     local_agent.set_network_genes(genes)
     
     score = run_simulation(simulation_manager, local_agent)
@@ -36,12 +39,21 @@ def mutate_genes(genes, mutation_rate=NEURO_EVOLUTION_CONFIG.base_mutation_rate 
         
     return mutated_genes
 
-def reproduction_and_evolve(agents : list[AiAgent], neurons_results):
+def reproduction_and_evolve(agents: list[AiAgent], neurons_results, csv_filename: str):
     num_elites = 3
     scores = np.array(neurons_results)
     sorted_results_idx = np.argsort(scores)[::-1]
     elite_indices = [idx for idx in sorted_results_idx[:num_elites]]
-    print(f"Najlepszy agent -> : {scores[sorted_results_idx[0]]} Sredni wynik -> : {scores.mean()}")
+    best_score = scores[sorted_results_idx[0]]
+    overall_mean = scores.mean()
+    
+    top_10_percent_count = max(1, len(agents) // 10)
+    best_individuals_avg_score = np.mean(scores[sorted_results_idx[:top_10_percent_count]])
+    print(f"Najlepszy agent: {best_score:.2f} | Średnia Top 10%: {best_individuals_avg_score:.2f} | Średni wynik: {overall_mean:.2f}")
+
+    with open(csv_filename, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([best_score, best_individuals_avg_score, overall_mean])
     best_genes = agents[elite_indices[0]].get_network_genes()
     new_population_genes = []
     for idx in elite_indices:
@@ -52,8 +64,6 @@ def reproduction_and_evolve(agents : list[AiAgent], neurons_results):
     remaining_count = len(agents) - num_elites
     parent_indices = np.random.choice(len(agents), size=remaining_count, p=probabilities)
 
-
-    best_individuals_avg_score = np.mean(scores[sorted_results_idx[:NEURO_EVOLUTION_CONFIG.population_size // 10]])
     progress = max(0.0, min(1.0, best_individuals_avg_score / NEURO_EVOLUTION_CONFIG.target_score))
     mutation_rate = NEURO_EVOLUTION_CONFIG.base_mutation_rate * (1.1 - progress)
     mutation_strength = NEURO_EVOLUTION_CONFIG.base_mutation_strength * (1.1 - progress)
@@ -65,8 +75,8 @@ def reproduction_and_evolve(agents : list[AiAgent], neurons_results):
     
     for i in range(len(agents)):
         agents[i].set_network_genes(new_population_genes[i])
+        
     return best_genes
-
 def load_gens(agents : list[AiAgent]):
     try:
         geny = np.load('weights.npy', allow_pickle=True)
@@ -80,3 +90,21 @@ def load_gens(agents : list[AiAgent]):
 def save_gens(agents : list[AiAgent]):
     geny = [agent.get_network_genes() for agent in agents]
     np.save('weights.npy', np.array(geny, dtype=object))
+
+def render_best_agent(gene_queue):
+    simulation_manager = CarSimulationMenager(1, is_trainig_mode=False) 
+    local_agent = AiAgent(1)
+    
+    while True:
+        latest_genes = gene_queue.get() 
+        try:
+            while True:
+                next_genes = gene_queue.get_nowait() 
+                latest_genes = next_genes
+        except queue.Empty:
+            pass
+        if latest_genes == "STOP":
+            break
+        local_agent.set_network_genes(latest_genes)
+        run_simulation(simulation_manager, local_agent)
+    simulation_manager.quit()

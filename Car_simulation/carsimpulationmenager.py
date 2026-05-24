@@ -10,9 +10,10 @@ from .simulationconfig import SIMULATION_CONFIG, SimulationConfig
 from sys import exit
 
 class CarSimulationMenager():
-    def __init__(self, is_trainig_mode: bool=False, config: SimulationConfig = SIMULATION_CONFIG):
+    def __init__(self, ml_input_type, is_trainig_mode: bool=False, config: SimulationConfig = SIMULATION_CONFIG):
         self.config = config 
         self.is_training_mode = is_trainig_mode
+        self.ml_input_type = ml_input_type
 
         if self.is_training_mode:
             import os
@@ -45,22 +46,40 @@ class CarSimulationMenager():
             dest_pos, col = dest_and_col[i] 
             new_dest_point = DestinationPoint(dest_pos, col, self.config.car.dest_point_rect)
             self.dest_points_group.add(new_dest_point)
-            self.active_cars_group.add(Car(car_pos_and_angle, new_dest_point, self.config.car))
+            self.active_cars_group.add(Car(car_pos_and_angle, new_dest_point, self.ml_input_type, self.config.car))
 
         for car in self.active_cars_group:
             car.take_observations(self.obsticles_group, self.active_cars_group)
         
         
 
-    def colosion_menagment(self, frame): #funkcja na razie zakłada ze na mapie znajduje sie jeden samochod wiec kolizja miedzy pojazdami nie wystepuje 
-        #TODO miejsce na zrealizowanie kolizji między samochodkami które powinny być sprawdzo przed kolizjiami samochodow ze scianami 
-        for car in self.active_cars_group:
-            if pygame.sprite.spritecollide(car, self.obsticles_group, False, pygame.sprite.collide_mask):
+    def colosion_menagment(self, frame): 
+        active_cars = list(self.active_cars_group)
+        
+        for car in active_cars:
+            if not car.alive():
+                continue
+            
+            if pygame.sprite.spritecollideany(car, self.obsticles_group, pygame.sprite.collide_mask):
                 self.score += car.car_score(colision=True)
                 car.kill()
-            elif pygame.sprite.collide_mask(car, car.dest_point):
-                self.score += car.car_score(time=frame,win=True)
+                continue  
+            
+            if pygame.sprite.collide_mask(car, car.dest_point):
+                self.score += car.car_score(time=frame, win=True)
                 car.kill()
+                continue 
+                
+            hit_cars = pygame.sprite.spritecollide(car, self.active_cars_group, False, pygame.sprite.collide_mask)
+            
+            if len(hit_cars) > 1:
+                self.score += car.car_score(colision=True)
+                car.kill()
+                
+                for other_car in hit_cars:
+                    if other_car != car and other_car.alive():
+                        self.score += other_car.car_score(colision=True)
+                        other_car.kill()
 
     #TODO mozna pomyslec o dodaniu błędu gdy metoda ta zostanie wykonana przed koncem gry 
     def get_score(self):

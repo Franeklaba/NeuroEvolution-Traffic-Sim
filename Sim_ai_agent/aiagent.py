@@ -2,9 +2,25 @@ import numpy as np
 from .layer import Layer
 
 class AiAgent:
-    def __init__(self):
-        self.hidden_layer = Layer(input_size=11, output_size=15)
-        self.output_layer = Layer(input_size=15, output_size=2)
+    def __init__(self, ml_input_type):
+        if ml_input_type == 1:
+            self.hidden_layer = Layer(input_size=11, output_size=15)
+            self.output_layer = Layer(input_size=15, output_size=2)
+        elif ml_input_type == 2:
+            self.hidden_layer = Layer(input_size=18, output_size=21)
+            self.output_layer = Layer(input_size=21, output_size=2)
+        elif ml_input_type == 3:
+            self.hidden_layer = Layer(input_size=25, output_size=27)
+            self.output_layer = Layer(input_size=27, output_size=2)
+        elif ml_input_type == 4:
+            self.hidden_layer = Layer(input_size=32, output_size=36)
+            self.output_layer = Layer(input_size=36, output_size=2)
+        elif ml_input_type == 5:
+            self.hidden_layer = Layer(input_size=18, output_size=21)
+            self.output_layer = Layer(input_size=21, output_size=2)
+        else:
+            raise ValueError(f"Invalid ml_input_type: {ml_input_type}")
+        
 
     def forward(self, inputs):
 

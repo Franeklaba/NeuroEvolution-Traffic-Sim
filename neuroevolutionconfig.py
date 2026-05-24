@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 @dataclass(frozen=True)
 class NeuroevolutionConfig:
     population_size: int = 200
-    generations: int = 2
+    generations: int = 42
     base_mutation_rate: float = 0.3
     base_mutation_strength: float = 0.3
     num_elites: int = 3

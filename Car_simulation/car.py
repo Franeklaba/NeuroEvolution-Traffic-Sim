@@ -6,7 +6,7 @@ from .destinationpoint import DestinationPoint
 
 
 class Car(pygame.sprite.Sprite):
-    def __init__(self, position_and_angle: tuple[int, int], dest_point: DestinationPoint, car_config: CarConfig = CAR_CONFIG):
+    def __init__(self, position_and_angle: tuple[int, int], dest_point: DestinationPoint, ml_input_type, car_config: CarConfig = CAR_CONFIG):
         super().__init__()
         position, angle = position_and_angle
         self.car_config = car_config
@@ -34,6 +34,7 @@ class Car(pygame.sprite.Sprite):
 
         self._start_dist_to_dest_point = self.dist_to_dest_point
         self._min_dist_to_dest_point = self.dist_to_dest_point
+        self.ml_input_type = ml_input_type
 
 
     @property
@@ -73,14 +74,97 @@ class Car(pygame.sprite.Sprite):
         if distacnce_to_obsticle > 0:
             pygame.draw.circle(screen, current_color, obsticle_col_point, 3)
 
-
-    def _get_ml_sensor_input(self, measur):
+    def _get_ml_sensor_input_1(self, measur):
         ml_sensor_input = list()
-        
-        for distance_to_obsticle, distance_to_another_car, sensor_range, car_obj in measur:
-            standardized_data = 1.0 - (distance_to_obsticle / sensor_range)
+        for distance_to_obsticle, distance_to_another_car, sensor_range, car_obj,obsticle_col_point in measur:
+            standardized_data = 1.0 - (min(distance_to_obsticle, distance_to_another_car) / sensor_range)
             standardized_data = max(0.0, min(1.0, standardized_data))
             ml_sensor_input.append(standardized_data)
+        return ml_sensor_input
+    
+    def _get_ml_sensor_input_2(self, measur):
+        ml_sensor_input = list()
+        for distance_to_obsticle, distance_to_another_car, sensor_range, car_obj,obsticle_col_point in measur:
+            wall_sensor_data = 1.0 - (distance_to_obsticle / sensor_range)
+            wall_sensor_data = max(0.0, min(1.0, wall_sensor_data))
+            car_sensor_data = 1.0 - (distance_to_another_car / sensor_range)
+            car_sensor_data = max(0.0, min(1.0, car_sensor_data))
+            ml_sensor_input.append(wall_sensor_data)
+            ml_sensor_input.append(car_sensor_data)
+        return ml_sensor_input
+
+    def _get_closure_rate(self, other_car: 'Car' = None, wall: bool = False, wall_pos: tuple[float, float] = (0, 0)) -> float:
+        v_self = self.direction_vector * self.speed
+        if wall:
+            v_other = pygame.math.Vector2(0, 0) 
+            target_pos = pygame.math.Vector2(wall_pos)
+        else:
+            if other_car is None:
+                return 0.0 
+            v_other = other_car.direction_vector * other_car.speed
+            target_pos = other_car.pos
+        v_rel = v_self - v_other
+    
+        pos_diff = target_pos - self.pos
+        if pos_diff.length_squared() == 0:
+            return 0.0 
+        dir_to_target = pos_diff.normalize()
+        closure_rate = v_rel.dot(dir_to_target)
+        max_possible_rate = 1.8 * self.car_config.max_speed
+        normalized_rate = closure_rate / max_possible_rate
+        return max(-1.0, min(1.0, normalized_rate))
+    
+    def _get_ml_sensor_input_3(self, measur):
+        ml_sensor_input = list()
+        for distance_to_obsticle, distance_to_another_car, sensor_range, car_obj,obsticle_col_point in measur:
+            wall_sensor_data = 1.0 - (distance_to_obsticle / sensor_range)
+            wall_sensor_data = max(0.0, min(1.0, wall_sensor_data))
+            car_sensor_data = 1.0 - (distance_to_another_car / sensor_range)
+            car_sensor_data = max(0.0, min(1.0, car_sensor_data))
+            closure_rate = self._get_closure_rate(other_car=car_obj)
+            ml_sensor_input.append(wall_sensor_data)
+            ml_sensor_input.append(car_sensor_data)
+            ml_sensor_input.append(closure_rate)
+        return ml_sensor_input
+
+    def _get_ml_sensor_input_4(self, measur):
+        ml_sensor_input = list()
+        for distance_to_obsticle, distance_to_another_car, sensor_range, car_obj, obsticle_col_point in measur:
+            wall_sensor_data = 1.0 - (distance_to_obsticle / sensor_range)
+            wall_sensor_data = max(0.0, min(1.0, wall_sensor_data))
+            car_sensor_dist = 1.0 - (distance_to_another_car / sensor_range)
+            car_sensor_dist = max(0.0, min(1.0, car_sensor_dist))
+            if car_obj is not None:
+                v_self = self.direction_vector * self.speed
+                v_other = car_obj.direction_vector * car_obj.speed
+                v_rel_global = v_self - v_other
+    
+                v_rel_local = v_rel_global.rotate(self.angle)
+                max_vel = 1.8 * self.car_config.max_speed
+        
+                rel_vx = max(-1.0, min(1.0, v_rel_local.x / max_vel))
+                rel_vy = max(-1.0, min(1.0, v_rel_local.y / max_vel))
+            else:
+                rel_vx = 0.0
+                rel_vy = 0.0
+            
+            ml_sensor_input.extend([wall_sensor_data, car_sensor_dist, rel_vx, rel_vy])
+        return ml_sensor_input
+    
+    def _get_ml_sensor_input_5(self, measur):
+        ml_sensor_input = list()
+        for distance_to_obsticle, distance_to_another_car, sensor_range, car_obj,obsticle_col_point in measur:
+            
+            nearest_dist = min(distance_to_obsticle, distance_to_another_car)
+            sensor_data = 1.0 - (nearest_dist / sensor_range)
+            sensor_data = max(0.0, min(1.0, sensor_data))
+            
+            if distance_to_another_car < distance_to_obsticle and car_obj is not None:
+                closure_rate = self._get_closure_rate(other_car=car_obj)
+            else:
+                closure_rate = self._get_closure_rate(wall=True, wall_pos=obsticle_col_point)
+
+            ml_sensor_input.extend([sensor_data, closure_rate])   
         return ml_sensor_input
     
     def _get_ml_nav_input(self):
@@ -93,8 +177,19 @@ class Car(pygame.sprite.Sprite):
         sin_angle = math.sin(angle_rad)
         cos_angle = math.cos(angle_rad)
         return [norm_distance, sin_angle, cos_angle]
-    def _get_ml_input(self, measur): # aktualnie funckcja ta przetwarza jedynie wejście z czujnika ścian zakładamy ze na planszy jest tylko jeden samochod 
-        sensor_data = self._get_ml_sensor_input(measur)
+    def _get_ml_input(self, measur): 
+        if self.ml_input_type == 1:
+            sensor_data = self._get_ml_sensor_input_1(measur)
+        elif self.ml_input_type == 2:
+            sensor_data = self._get_ml_sensor_input_2(measur)
+        elif self.ml_input_type == 3:
+            sensor_data = self._get_ml_sensor_input_3(measur)
+        elif self.ml_input_type ==  4:
+            sensor_data = self._get_ml_sensor_input_4(measur)
+        elif self.ml_input_type ==  5:
+            sensor_data = self._get_ml_sensor_input_5(measur)
+        else:
+            raise ValueError(f"Invalid ml_input_type value: {self.ml_input_type}. Values 1 to 5 expected.")
         navigation_data = self._get_ml_nav_input()
         norm_speed = max(0.0, min(1.0, self.speed / self.car_config.max_speed))
         
@@ -110,7 +205,7 @@ class Car(pygame.sprite.Sprite):
             if screen: 
                 self._draw_sensors(distance_to_obsticle, obsticle_col_point, car_col_point, screen, not(car_obj == None))
 
-            measurement.append((distance_to_obsticle, distance_to_another_car, sensor_range, car_obj))
+            measurement.append((distance_to_obsticle, distance_to_another_car, sensor_range, car_obj, obsticle_col_point))
         return measurement                
         
 
