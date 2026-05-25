@@ -41,7 +41,7 @@ def mutate_genes(genes, mutation_rate=NEURO_EVOLUTION_CONFIG.base_mutation_rate 
     return mutated_genes
 
 def reproduction_and_evolve(agents: list[AiAgent], neurons_results):
-    num_elites = 5
+    num_elites =  NEURO_EVOLUTION_CONFIG.num_of_elites
     csv_filename = NEURO_EVOLUTION_CONFIG.result_file_path
     
     scores = np.array(neurons_results)

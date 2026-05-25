@@ -9,7 +9,7 @@ class MlInputNormConfig:
     
 @dataclass(frozen=True)
 class SensorConfig: 
-    base_range: int = 250  # Warto nieznacznie zwiększyć bazowy zasięg, skoro nie ma już bonusu od prędkości
+    base_range: int = 250  
     angle_range_multiplier: float = 0.7
 
 @dataclass(frozen=True)
@@ -24,7 +24,7 @@ class CarScoreConfig:
 @dataclass(frozen=True)
 class CarConfig:
     angle_change: int = 2
-    max_speed: int = 10
+    max_speed: int = 8
     acceleration: float = 0.2
     sensors_angle: tuple[int, ...] = (0, 20, 45, 90, 270, 315, 340)
 
