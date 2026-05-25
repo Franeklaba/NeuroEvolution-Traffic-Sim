@@ -9,7 +9,7 @@ class MlInputNormConfig:
     
 @dataclass(frozen=True)
 class SensorConfig: 
-    base_range: int = 250  
+    base_range: int = 250
     angle_range_multiplier: float = 0.7
 
 @dataclass(frozen=True)
@@ -20,11 +20,11 @@ class CarScoreConfig:
     time_efficiency_exponent: float = 2.0
     collision_multiplier: float = 0.5
     timeout_multiplier: float = 0.8
-    
+
 @dataclass(frozen=True)
 class CarConfig:
     angle_change: int = 2
-    max_speed: int = 8
+    max_speed: int = 5
     acceleration: float = 0.2
     sensors_angle: tuple[int, ...] = (0, 20, 45, 90, 270, 315, 340)
 
@@ -50,31 +50,30 @@ class SimulationConfig:
     car: CarConfig = field(default_factory=CarConfig)
     
     _city_positions_and_angles: list[tuple[tuple[int, int], int]] = field(default_factory=lambda: [
-        # Przesunięto punkty idealnie na środek 120-pikselowych dróg (np. Y = 60 zamiast Y = 100)
-        ((60, 60), 342),      # 1. Lewy górny róg
-        ((370, 60), 344),     # 2. Górna ulica (środek lewy)
-        ((680, 60), 233),     # 3. Skrzyżowanie górne
-        ((1020, 60), 233),    # 4. Górna ulica (środek prawy)
-        ((1300, 60), 233),    # 5. Przed prawym murem (góra)
-        ((1840, 60), 225),    # 6. Za prawym murem (góra)
-        ((60, 500), 347),     # 7. Lewe skrzyżowanie poziome
-        ((680, 500), 146),    # 8. Środek mapy (skrzyżowanie)
-        ((1300, 500), 156),   # 9. Środek mapy, przed murem
-        ((1840, 500), 160),   # 10. Zaułek za prawym murem
-        ((60, 940), 42),      # 11. Lewy dolny róg
-        ((370, 940), 42),     # 12. Dolna ulica (środek lewy)
-        ((680, 940), 36),     # 13. Dolne skrzyżowanie
-        ((1020, 940), 156),   # 14. Dolna ulica (środek prawy)
-        ((1840, 940), 160),   # 15. Skrajnie prawy dolny róg
+        # Wycentrowane na drogach o szerokości 150px
+        ((75, 75), 342),      # 1. Lewy górny róg
+        ((375, 75), 344),     # 2. Górna ulica (środek lewy)
+        ((675, 75), 233),     # 3. Skrzyżowanie górne
+        ((1050, 75), 233),    # 4. Górna ulica (środek prawy)
+        ((1275, 75), 233),    # 5. Przed prawym murem (góra)
+        ((1825, 75), 225),    # 6. Za prawym murem (góra)
+        ((75, 500), 347),     # 7. Lewe skrzyżowanie poziome
+        ((675, 500), 146),    # 8. Środek mapy (skrzyżowanie)
+        ((1275, 500), 156),   # 9. Środek mapy, przed murem
+        ((1825, 500), 160),   # 10. Zaułek za prawym murem
+        ((75, 925), 42),      # 11. Lewy dolny róg
+        ((375, 925), 42),     # 12. Dolna ulica (środek lewy)
+        ((675, 925), 36),     # 13. Dolne skrzyżowanie
+        ((1050, 925), 156),   # 14. Dolna ulica (środek prawy)
+        ((1825, 925), 160),   # 15. Skrajnie prawy dolny róg
     ], repr=False, hash=False, compare=False)
 
     _city_destination_points: list[tuple[int, int]] = field(default_factory=lambda: [
-        # Losowo przypisane, zaktualizowane pozycje docelowe
-        (1300, 500), (1840, 940), (60, 940), (680, 940), (1300, 940),
-        (1020, 940), (60, 60), (370, 940), (1840, 60), (370, 60),
-        (680, 60), (1020, 60), (60, 500), (680, 500), (1300, 60)
+        # Dopasowane do nowych osi współrzędnych dróg
+        (1275, 500), (1825, 925), (75, 925), (675, 925), (1275, 925),
+        (1050, 925), (75, 75), (375, 925), (1825, 75), (375, 75),
+        (675, 75), (1050, 75), (75, 500), (675, 500), (1275, 75)
     ], repr=False, hash=False, compare=False)
-
     def cars_position_and_angle(self, map_type="slalom") -> list[tuple[tuple[int, int], int]]:
         if map_type == "slalom":
             return [((self.window_width - 80 - (i % 3) * 60, 100 + (i // 3) * 40), 180) for i in range(self.num_of_cars)]
@@ -83,7 +82,7 @@ class SimulationConfig:
         elif map_type == "bottleneck":
             return [((self.window_width / 2 + ((i % 5) - 2) * 200, 80 + (i // 5) * 80), 270) for i in range(self.num_of_cars)]
         elif map_type == "track":
-            return [((100, self.window_height / 2 + (i - self.num_of_cars // 2)* 70), 0) for i in range(self.num_of_cars)]
+            return [((50, self.window_height / 2 + (i - self.num_of_cars // 2)* 60), 0) for i in range(self.num_of_cars)]
         else:
             return [(((70, self.window_height / 2)), 0) for _ in range(self.num_of_cars)]
     @property 
@@ -99,29 +98,30 @@ class SimulationConfig:
         ]
         if map_type == "slalom":
             inner_obstacles = [
-                (1500, 350, 80, 650),
-                (1150, 0, 80, 650),
-                (800, 450, 80, 550),
-                (450, 350, 80, 300),
+                (1500, 400, 120, 600),
+                (1150, 0, 120, 550),
+                (800, 500, 120, 350),
+                (450, 350, 120, 300),
                 (200, 0, 20, 250),  
                 (200, 400, 20, 200),   # Blokada środkowa
                 (200, 750, 20, 250),   # Blokada dolna
             ]
         elif map_type == "city":
             inner_obstacles = [
-                (120, 120, 500, 320),    # Lewy górny kwartał
-                (120, 560, 500, 320),    # Lewy dolny kwartał
-                (740, 120, 500, 320),    # Środkowy górny kwartał
-                (740, 560, 500, 320),    # Środkowy dolny kwartał
-                (1360, 120, 420, 760),   # Prawy masywny blok (odcina środek, tworzy ślepy zaułek z prawej)
+                # Ustawione tak, by ulice w pionie i poziomie miały równo 150px szerokości
+                (150, 150, 450, 275),    # Lewy górny kwartał
+                (150, 575, 450, 275),    # Lewy dolny kwartał
+                (750, 150, 450, 275),    # Środkowy górny kwartał
+                (750, 575, 450, 275),    # Środkowy dolny kwartał
+                (1350, 150, 400, 700),   # Prawy masywny blok (łączy górę z dołem)
             ]
         elif map_type == "bottleneck":
             inner_obstacles = [
-                (0, 300, 600, 50),       # Lewa góra
-                (1300, 300, 600, 50),    # Prawa góra                
+                (0, 0, 400, 400),       # Lewa góra
+                (1500, 0, 400, 400),    # Prawa góra                
                 # 2. WŁAŚCIWE WĄSKIE GARDŁO (Zostawia tylko 300px przerwy)
-                (0, 550, 800, 100),      # Lewa główna zapora
-                (1100, 550, 800, 100),   # Prawa główna zapora
+                (0, 400, 750, 150),      # Lewa główna zapora
+                (1150, 400, 750, 150),   # Prawa główna zapora
                 # 3. ROZDZIELACZ (Splitter) - wymusza nagły manewr po wyjeździe z gardła
                 (900, 750, 100, 150),    # Centralny słup na dole
                 # 4. ŚCIANKI DZIAŁOWE (Tworzą wydzielone boksy dla celów)
@@ -130,9 +130,10 @@ class SimulationConfig:
             ]
         elif map_type == "track":
             inner_obstacles = [
-                (250, 250, 50, 500),   
-                (450, 0, 60, 350),      
-                (450, 650, 60, 350),    
+                (230, 250, 50, 180), 
+                (230, 570, 50, 180),   
+                (450, 0, 60, 200),      
+                (450, 800, 60, 200),    
                 (700, 300, 60, 400),    
                 (900, 150, 300, 80),    
                 (900, 770, 300, 80),    
@@ -157,9 +158,9 @@ class SimulationConfig:
         ]
         if map_type == "slalom":
             points = [
-                (1350, 150), (1350, 250), (1400, 100),
+                (500, 900), (650, 850), (650, 950),
                 (1000, 750), (1000, 850), (1050, 950),
-                (650, 100), (650, 250), (650, 400),
+                (500, 250), (650, 250), (650, 400),
                 (100, 300), (100, 350), (50, 325),
                 (100, 650), (100, 700), (50, 675)
             ]
@@ -168,11 +169,11 @@ class SimulationConfig:
         elif map_type == "bottleneck":
             points = [
                 (850, 680), (950, 680), (1050, 680),
-                (750, 850), (1150, 850), (850, 920), (1050, 920),
+                (750, 850), (1150, 850),(1600, 900), (1050, 920),
                 (550, 850), (650, 950),     
                 (1250, 850), (1350, 950),  
-                (150, 800), (300, 900),    
-                (1600, 900), (1750, 800)   
+                (1750, 800), (300, 900),    
+                (850, 920), (150, 800)   
             ]
         elif map_type == "track":
             points = [

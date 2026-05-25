@@ -4,13 +4,13 @@ from dataclasses import dataclass, field
 @dataclass(frozen=True)
 class NeuroevolutionConfig:
 
-    ml_input_type:int = 2
+    ml_input_type:int = 1
 
-    generations: int = 200
+    generations: int = 500
     base_mutation_rate: float = 0.3
     base_mutation_strength: float = 0.3
-    stability_penalty_weight:float = 0.5
-    target_score: float = 110000.0
+    stability_penalty_weight:float = 0.6
+    target_score: float = 240000.0
 
     
     _population_sizes: dict[int, int] = field(default_factory=lambda: {
