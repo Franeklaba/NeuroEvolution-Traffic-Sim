@@ -1,4 +1,4 @@
-from Car_simulation import CarSimulationMenager
+from Car_simulation import CarSimulationMenager, SIMULATION_CONFIG, SimulationConfig
 from Sim_ai_agent import AiAgent
 import numpy as np
 import queue
@@ -6,10 +6,10 @@ import csv
 
 from neuroevolutionconfig import NEURO_EVOLUTION_CONFIG, NeuroevolutionConfig 
 
-
+simulation_time = SIMULATION_CONFIG.simulation_time
 def run_single_simulation(simulation_manager: CarSimulationMenager, ai_agent: AiAgent, map_type="track"):
     simulation_manager.reset(map_type)
-    for frame in range(NEURO_EVOLUTION_CONFIG.simulation_time):
+    for frame in range(simulation_time):
         observations = simulation_manager.get_ml_input()
         actions_matrix = ai_agent.forward(observations)
         simulation_manager.step(frame, actions_matrix)

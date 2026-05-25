@@ -6,11 +6,9 @@ class NeuroevolutionConfig:
 
     ml_input_type:int = 2
 
-    generations: int = 100
+    generations: int = 200
     base_mutation_rate: float = 0.3
     base_mutation_strength: float = 0.3
-    simulation_time: int = 1400
-
     stability_penalty_weight:float = 0.5
     target_score: float = 110000.0
 
@@ -62,13 +60,13 @@ class NeuroevolutionConfig:
 
     @property
     def result_file_path(self) -> str:
-        return 'genes_and_results/results/' + self._result_files_names[self.ml_input_type]
+        return 'genes_and_results_in_training/results/' + self._result_files_names[self.ml_input_type]
     @property
     def weights_file_path(self) -> str:
-        return 'genes_and_results/population_weights/' + self._weights_files_names[self.ml_input_type]
+        return 'genes_and_results_in_training/population_weights/' + self._weights_files_names[self.ml_input_type]
     @property
     def best_weights_file_path(self) -> str:
-        return 'genes_and_results/best_genes/' + self._best_weights_files_names[self.ml_input_type]
+        return 'genes_and_results_in_training/best_genes/' + self._best_weights_files_names[self.ml_input_type]
     
 
     

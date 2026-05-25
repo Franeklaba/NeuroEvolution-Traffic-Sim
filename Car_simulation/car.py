@@ -216,20 +216,21 @@ class Car(pygame.sprite.Sprite):
         self.take_observations(obsticles_group, cars_group, screen)
         self._min_dist_to_dest_point = min(self._min_dist_to_dest_point, self.dist_to_dest_point)
 
-    def car_score(self, time=0, colision=False, win=False):
-        score_cfg = self.car_config.score
-        best_dist_achieved = self._start_dist_to_dest_point - self._min_dist_to_dest_point 
-        result = max(score_cfg.min_distance_score, best_dist_achieved)
-        if not colision:
-            result += score_cfg.no_collision_reward
-        else:
-            result = max(score_cfg.min_distance_score, result - score_cfg.collision_penalty)
-
+    def car_score(self, max_sim_time=1500, time=0, colision=False, win=False):
+        cfg = self.car_config.score
+        start_dist = max(cfg.min_score, self._start_dist_to_dest_point) 
+        progress = max(0.0, (start_dist - self._min_dist_to_dest_point) / start_dist)
+        base_score = (progress ** 2) * start_dist * cfg.progress_distance_multiplier
         if win:
-            time_penalty = time * score_cfg.time_penalty_multiplier
-            win_bonus = max(score_cfg.win_base_reward, (score_cfg.win_distance_multiplier * self._start_dist_to_dest_point) - time_penalty)
-            result += win_bonus
-        return result
+            win_base = start_dist * cfg.win_distance_multiplier
+            time_efficiency = max(0.0, (max_sim_time - time) / max_sim_time)
+            time_bonus = (time_efficiency ** cfg.time_efficiency_exponent) * win_base
+            base_score += (win_base + time_bonus)
+        elif colision:        
+            base_score *= cfg.collision_multiplier
+        else:
+            base_score *= cfg.timeout_multiplier
+        return max(cfg.min_score, base_score)
     
     def take_observations(self, obsticles_group: pygame.sprite.Group, cars_group: pygame.sprite.Group, screen = None):
         sesor_mesur = self._sensors_managment(obsticles_group, cars_group, screen)

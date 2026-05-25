@@ -59,17 +59,14 @@ class CarSimulationMenager():
         for car in active_cars:
             if not car.alive():
                 continue
-            
             if pygame.sprite.spritecollideany(car, self.obsticles_group, pygame.sprite.collide_mask):
                 self.score += car.car_score(colision=True)
                 car.kill()
                 continue  
-            
             if pygame.sprite.collide_mask(car, car.dest_point):
-                self.score += car.car_score(time=frame, win=True)
+                self.score += car.car_score(max_sim_time=self.config.simulation_time, time=frame, win=True)
                 car.kill()
                 continue 
-                
             hit_cars = pygame.sprite.spritecollide(car, self.active_cars_group, False, pygame.sprite.collide_mask)
             
             if len(hit_cars) > 1:
