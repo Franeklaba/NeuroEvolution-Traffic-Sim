@@ -9,7 +9,6 @@ class NeuroevolutionConfig:
     generations: int = 100
     base_mutation_rate: float = 0.3
     base_mutation_strength: float = 0.3
-    num_elites: int = 3
     simulation_time: int = 1400
 
     stability_penalty_weight:float = 0.5
