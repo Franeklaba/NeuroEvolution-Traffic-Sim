@@ -12,7 +12,7 @@ class NeuroevolutionConfig:
     simulation_time: int = 1400
 
     stability_penalty_weight:float = 0.5
-    target_score: float = 100000.0
+    target_score: float = 110000.0
 
     
     _population_sizes: dict[int, int] = field(default_factory=lambda: {
