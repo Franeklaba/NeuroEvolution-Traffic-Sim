@@ -4,9 +4,9 @@ from dataclasses import dataclass, field
 @dataclass(frozen=True)
 class NeuroevolutionConfig:
 
-    ml_input_type:int = 3
+    ml_input_type:int = 4
 
-    generations: int = 1200
+    generations: int = 2200
     base_mutation_rate: float = 0.3
     base_mutation_strength: float = 0.3
     stability_penalty_weight:float = 0.6
