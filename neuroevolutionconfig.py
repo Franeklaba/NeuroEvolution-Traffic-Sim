@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 @dataclass(frozen=True)
 class NeuroevolutionConfig:
 
-    ml_input_type:int = 1
+    ml_input_type:int = 2
 
     generations: int = 100
     base_mutation_rate: float = 0.3

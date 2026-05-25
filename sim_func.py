@@ -21,8 +21,8 @@ def run_simulation(simulation_manager: CarSimulationMenager, ai_agent: AiAgent):
     # return min(scores) 
     return np.mean(scores) - (NEURO_EVOLUTION_CONFIG.stability_penalty_weight * np.std(scores))
 def evaluate_genes(genes):
-    simulation_manager = CarSimulationMenager(1, is_trainig_mode=True)
-    local_agent = AiAgent(1)
+    simulation_manager = CarSimulationMenager(NEURO_EVOLUTION_CONFIG.ml_input_type, is_trainig_mode=True)
+    local_agent = AiAgent(NEURO_EVOLUTION_CONFIG.ml_input_type)
     local_agent.set_network_genes(genes)
     
     score = run_simulation(simulation_manager, local_agent)
@@ -100,8 +100,8 @@ def save_gens(agents : list[AiAgent], best_genes):
 
 
 def render_best_agent(gene_queue):
-    simulation_manager = CarSimulationMenager(1, is_trainig_mode=False) 
-    local_agent = AiAgent(1)
+    simulation_manager = CarSimulationMenager(NEURO_EVOLUTION_CONFIG.ml_input_type, is_trainig_mode=False) 
+    local_agent = AiAgent(NEURO_EVOLUTION_CONFIG.ml_input_type)
     
     while True:
         latest_genes = gene_queue.get() 
