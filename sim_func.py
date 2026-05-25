@@ -6,6 +6,7 @@ import csv
 
 from neuroevolutionconfig import NEURO_EVOLUTION_CONFIG, NeuroevolutionConfig 
 
+
 def run_single_simulation(simulation_manager: CarSimulationMenager, ai_agent: AiAgent, map_type="track"):
     simulation_manager.reset(map_type)
     for frame in range(NEURO_EVOLUTION_CONFIG.simulation_time):
@@ -39,8 +40,10 @@ def mutate_genes(genes, mutation_rate=NEURO_EVOLUTION_CONFIG.base_mutation_rate 
         
     return mutated_genes
 
-def reproduction_and_evolve(agents: list[AiAgent], neurons_results, csv_filename: str):
-    num_elites = 3
+def reproduction_and_evolve(agents: list[AiAgent], neurons_results):
+    num_elites = 5
+    csv_filename = NEURO_EVOLUTION_CONFIG.result_file_path
+    
     scores = np.array(neurons_results)
     sorted_results_idx = np.argsort(scores)[::-1]
     elite_indices = [idx for idx in sorted_results_idx[:num_elites]]
@@ -78,8 +81,9 @@ def reproduction_and_evolve(agents: list[AiAgent], neurons_results, csv_filename
         
     return best_genes
 def load_gens(agents : list[AiAgent]):
+    weights_file_path = NEURO_EVOLUTION_CONFIG.weights_file_path
     try:
-        geny = np.load('weights.npy', allow_pickle=True)
+        geny = np.load(weights_file_path, allow_pickle=True)
     except FileNotFoundError:
         return agents
     for i in range(len(agents)):
@@ -87,9 +91,13 @@ def load_gens(agents : list[AiAgent]):
     return agents
     
     
-def save_gens(agents : list[AiAgent]):
+def save_gens(agents : list[AiAgent], best_genes):
+    weights_file_path = NEURO_EVOLUTION_CONFIG.weights_file_path
     geny = [agent.get_network_genes() for agent in agents]
-    np.save('weights.npy', np.array(geny, dtype=object))
+    np.save(weights_file_path, np.array(geny, dtype=object))
+    best_weights_file_path = NEURO_EVOLUTION_CONFIG.best_weights_file_path
+    np.save(best_weights_file_path, np.array(best_genes, dtype=object))
+
 
 def render_best_agent(gene_queue):
     simulation_manager = CarSimulationMenager(1, is_trainig_mode=False) 

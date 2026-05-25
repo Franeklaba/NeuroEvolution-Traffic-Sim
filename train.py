@@ -8,11 +8,9 @@ from neuroevolutionconfig import NEURO_EVOLUTION_CONFIG, NeuroevolutionConfig
 
 population_size = NEURO_EVOLUTION_CONFIG.population_size
 generations = NEURO_EVOLUTION_CONFIG.generations
-ml_input_types = [1,2,3,4,5]
-
 
 if __name__ == '__main__':
-    ai_agents = [AiAgent(1) for _ in range(population_size)]
+    ai_agents = [AiAgent(ml_input_type=NEURO_EVOLUTION_CONFIG.ml_input_type) for _ in range(population_size)]
     ai_agents = load_gens(ai_agents)
     
     cores = max(1, multiprocessing.cpu_count() - 1) 
@@ -24,12 +22,11 @@ if __name__ == '__main__':
         population_genes = [agent.get_network_genes() for agent in ai_agents]
         with multiprocessing.Pool(processes=cores) as pool:
             fitness_scores = pool.map(evaluate_genes, population_genes)  
-        best_genes = reproduction_and_evolve(ai_agents, fitness_scores, 'ml_input_1_results.csv')
+        best_genes = reproduction_and_evolve(ai_agents, fitness_scores)
         gene_queue.put([layer.copy() for layer in best_genes])
         
         print(f"Zakończono generację {gen + 1}")
-        
-    save_gens(ai_agents)
+        save_gens(ai_agents, best_genes)
 
     gene_queue.put("STOP")
     render_process.join()
