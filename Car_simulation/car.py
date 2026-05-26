@@ -217,7 +217,7 @@ class Car(pygame.sprite.Sprite):
         self._update_pos(actions)
         self.take_observations(obsticles_group, cars_group, screen)
         if self.dist_to_dest_point + 20 < self._min_dist_to_dest_point:
-            self._start_dist_to_dest_point = self._min_dist_to_dest_point
+            self._min_dist_to_dest_point = self.dist_to_dest_point
             self.last_progress_timer = 0
         else :
             self.last_progress_timer += 1
