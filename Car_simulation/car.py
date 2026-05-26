@@ -36,6 +36,7 @@ class Car(pygame.sprite.Sprite):
         self._min_dist_to_dest_point = self.dist_to_dest_point
         self.ml_input_type = ml_input_type
 
+        self._timer_checkpoint_dist = self.dist_to_dest_point
         self.last_progress_timer = 0
 
 
@@ -216,8 +217,9 @@ class Car(pygame.sprite.Sprite):
             self._update_sprite()
         self._update_pos(actions)
         self.take_observations(obsticles_group, cars_group, screen)
-        if self.dist_to_dest_point + 20 < self._min_dist_to_dest_point:
-            self._min_dist_to_dest_point = self.dist_to_dest_point
+        self._min_dist_to_dest_point = min(self._min_dist_to_dest_point, self.dist_to_dest_point)
+        if self.dist_to_dest_point + 20 < self._timer_checkpoint_dist:
+            self._timer_checkpoint_dist = self.dist_to_dest_point
             self.last_progress_timer = 0
         else :
             self.last_progress_timer += 1
