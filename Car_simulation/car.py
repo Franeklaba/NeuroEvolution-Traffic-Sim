@@ -36,6 +36,8 @@ class Car(pygame.sprite.Sprite):
         self._min_dist_to_dest_point = self.dist_to_dest_point
         self.ml_input_type = ml_input_type
 
+        self.last_progress_timer = 0
+
 
     @property
     def dist_to_dest_point(self):
@@ -214,24 +216,31 @@ class Car(pygame.sprite.Sprite):
             self._update_sprite()
         self._update_pos(actions)
         self.take_observations(obsticles_group, cars_group, screen)
-        self._min_dist_to_dest_point = min(self._min_dist_to_dest_point, self.dist_to_dest_point)
+        if self.dist_to_dest_point + 20 < self._min_dist_to_dest_point:
+            self._start_dist_to_dest_point = self._min_dist_to_dest_point
+            self.last_progress_timer = 0
+        else :
+            self.last_progress_timer += 1
+
 
     def car_score(self, max_sim_time=1500, time=0, colision=False, win=False):
         cfg = self.car_config.score
+        
         start_dist = max(cfg.min_score, self._start_dist_to_dest_point) 
         progress = max(0.0, (start_dist - self._min_dist_to_dest_point) / start_dist)
-        base_score = (progress ** 2) * start_dist * cfg.progress_distance_multiplier
+        base_score = (progress ** 2) * 50.0
+        
         if win:
-            win_base = start_dist * cfg.win_distance_multiplier
+            win_base = 25.0
             time_efficiency = max(0.0, (max_sim_time - time) / max_sim_time)
-            time_bonus = (time_efficiency ** cfg.time_efficiency_exponent) * win_base
+            time_bonus = (time_efficiency ** cfg.time_efficiency_exponent) * 25.0
             base_score += (win_base + time_bonus)
         elif colision:        
             base_score *= cfg.collision_multiplier
         else:
             base_score *= cfg.timeout_multiplier
+            
         return max(cfg.min_score, base_score)
-    
     def take_observations(self, obsticles_group: pygame.sprite.Group, cars_group: pygame.sprite.Group, screen = None):
         sesor_mesur = self._sensors_managment(obsticles_group, cars_group, screen)
         self.current_observation = self._get_ml_input(sesor_mesur)

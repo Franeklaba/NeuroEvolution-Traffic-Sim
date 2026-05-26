@@ -82,10 +82,16 @@ class CarSimulationMenager():
     def get_score(self):
         for car in self.active_cars_group:
             self.score += car.car_score()
-        return self.score
+        return self.score / self.config.num_of_cars
     
     def get_ml_input(self):
         return [car.current_observation for car in self.active_cars_group]
+
+    def _cars_progress_managment(self):
+        for car in self.active_cars_group:
+            if car.last_progress_timer >= 200:
+                self.score += car.car_score()
+                car.kill()
 
     def step(self, frame, actions_matrix):
         #TODO przekminic wyswietlanie 
@@ -100,6 +106,7 @@ class CarSimulationMenager():
         for i, car in enumerate(self.active_cars_group):
             car.update(self.obsticles_group, self.active_cars_group, actions_matrix[i], self.screen)
         self.colosion_menagment(frame)
+        self._cars_progress_managment()
 
     def __draw(self):
         self.dest_points_group.draw(self.screen)

@@ -10,7 +10,7 @@ class NeuroevolutionConfig:
     base_mutation_rate: float = 0.3
     base_mutation_strength: float = 0.3
     stability_penalty_weight:float = 0.6
-    target_score: float = 240000.0
+    target_score: float = 100.0
 
     
     _population_sizes: dict[int, int] = field(default_factory=lambda: {

@@ -18,8 +18,8 @@ def run_single_simulation(simulation_manager: CarSimulationMenager, ai_agent: Ai
     return simulation_manager.get_score()
 def run_simulation(simulation_manager: CarSimulationMenager, ai_agent: AiAgent):
     scores = np.array([run_single_simulation(simulation_manager, ai_agent, m) for m in simulation_manager.config.map_types])
-    # return min(scores) 
-    return np.mean(scores) - (NEURO_EVOLUTION_CONFIG.stability_penalty_weight * np.std(scores))
+    return min(scores) + np.mean(scores) * 0.1
+    # return np.mean(scores) - (NEURO_EVOLUTION_CONFIG.stability_penalty_weight * np.std(scores))
 def evaluate_genes(genes):
     simulation_manager = CarSimulationMenager(NEURO_EVOLUTION_CONFIG.ml_input_type, is_trainig_mode=True)
     local_agent = AiAgent(NEURO_EVOLUTION_CONFIG.ml_input_type)
