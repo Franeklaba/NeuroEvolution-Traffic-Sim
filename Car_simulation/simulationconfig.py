@@ -46,7 +46,7 @@ class SimulationConfig:
     window_height: int = 1000
     num_of_cars: int = 15
     background_color: tuple[int, int, int] = (30, 30, 30)
-    clock_tick: int = 30
+    clock_tick: int = 50
     car: CarConfig = field(default_factory=CarConfig)
     
     _city_positions_and_angles: list[tuple[tuple[int, int], int]] = field(default_factory=lambda: [

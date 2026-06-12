@@ -89,7 +89,7 @@ class CarSimulationMenager():
 
     def _cars_progress_managment(self):
         for car in self.active_cars_group:
-            if car.last_progress_timer >= 200:
+            if car.last_progress_timer >= 400:
                 self.score += car.car_score()
                 car.kill()
 
